@@ -121,7 +121,7 @@ export default function KolDetail() {
 
   return (
     <div className="space-y-6">
-      <Link href="/agent/kols" className="text-sm text-slate-500">{t("backToKols")}</Link>
+      <Link href="/kols" className="text-sm text-slate-500">{t("backToKols")}</Link>
 
       <div className="flex justify-between items-start">
         <div>
