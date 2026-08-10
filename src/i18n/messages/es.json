@@ -23,6 +23,23 @@
     "rateLimited": "Demasiadas solicitudes. Espera un minuto y vuelve a intentarlo.",
     "registeredAsAgent": "Este correo está registrado como Agente. Usa agent.linkchinamed.com para iniciar sesión."
   },
+  "agentLogin": {
+    "pageTitle": "Inicio de sesión del agente",
+    "introText": "Ingresa el correo del agente para recibir un código de un solo uso.",
+    "emailPlaceholder": "agent@example.com",
+    "captchaRequired": "Por favor completa el captcha.",
+    "sendCode": "Enviar código",
+    "sending": "Enviando…",
+    "notRegisteredAgent": "No hay cuenta de agente para este correo. Contacta a tu administrador.",
+    "registeredAsKol": "Este correo está registrado como KOL. Inicia sesión en affiliate.linkchinamed.com.",
+    "checkFailed": "No se pudo verificar el correo. Inténtalo de nuevo.",
+    "rateLimited": "Demasiados intentos. Espera y vuelve a intentarlo.",
+    "enterCodeTitle": "Ingresa tu código",
+    "codeSentTo": "Enviamos un código de 6 dígitos a <email></email>",
+    "codePlaceholder": "Código de 6 dígitos",
+    "verifyLogin": "Verificar e iniciar sesión",
+    "useDifferentEmail": "Usar otro correo"
+  },
   "register": {
     "title": "Únete como Socio Afiliado",
     "name": "Tu nombre",

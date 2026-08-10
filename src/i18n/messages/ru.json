@@ -23,6 +23,23 @@
     "rateLimited": "Слишком много запросов. Подождите минуту и повторите попытку.",
     "registeredAsAgent": "Этот адрес зарегистрирован как агент. Войдите через agent.linkchinamed.com."
   },
+  "agentLogin": {
+    "pageTitle": "Вход для агента",
+    "introText": "Введите email агента, чтобы получить одноразовый код.",
+    "emailPlaceholder": "agent@example.com",
+    "captchaRequired": "Пожалуйста, пройдите проверку.",
+    "sendCode": "Отправить код",
+    "sending": "Отправка…",
+    "notRegisteredAgent": "Для этого адреса нет учётной записи агента. Свяжитесь с администратором.",
+    "registeredAsKol": "Этот адрес зарегистрирован как KOL. Войдите через affiliate.linkchinamed.com.",
+    "checkFailed": "Не удалось проверить email. Попробуйте снова.",
+    "rateLimited": "Слишком много попыток. Подождите и повторите.",
+    "enterCodeTitle": "Введите код",
+    "codeSentTo": "Мы отправили 6-значный код на <email></email>",
+    "codePlaceholder": "6-значный код",
+    "verifyLogin": "Проверить и войти",
+    "useDifferentEmail": "Использовать другой адрес"
+  },
   "register": {
     "title": "Стать партнёром",
     "name": "Ваше имя",

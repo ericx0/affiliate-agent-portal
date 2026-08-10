@@ -23,6 +23,23 @@
     "rateLimited": "Too many requests. Please wait a minute and try again.",
     "registeredAsAgent": "This email is registered as an Agent. Please use agent.linkchinamed.com to log in."
   },
+  "agentLogin": {
+    "pageTitle": "Agent Login",
+    "introText": "Enter your agent email to receive a one-time code.",
+    "emailPlaceholder": "agent@example.com",
+    "captchaRequired": "Please complete the captcha.",
+    "sendCode": "Send code",
+    "sending": "Sending...",
+    "notRegisteredAgent": "No agent account for this email. Contact your administrator.",
+    "registeredAsKol": "This email is registered as a KOL. Please log in at affiliate.linkchinamed.com.",
+    "checkFailed": "Email check failed. Please try again.",
+    "rateLimited": "Too many attempts. Please wait and try again.",
+    "enterCodeTitle": "Enter your code",
+    "codeSentTo": "We sent a 6-digit code to <email></email>",
+    "codePlaceholder": "6-digit code",
+    "verifyLogin": "Verify and log in",
+    "useDifferentEmail": "Use a different email"
+  },
   "register": {
     "title": "Join as Affiliate Partner",
     "name": "Your name",

@@ -23,6 +23,23 @@
     "rateLimited": "الكثير من الطلبات. يرجى الانتظار دقيقة والمحاولة مرة أخرى.",
     "registeredAsAgent": "هذا البريد مسجل كوكيل. يرجى استخدام agent.linkchinamed.com لتسجيل الدخول."
   },
+  "agentLogin": {
+    "pageTitle": "تسجيل دخول الوكيل",
+    "introText": "أدخل بريد الوكيل الإلكتروني للحصول على رمز لمرة واحدة.",
+    "emailPlaceholder": "agent@example.com",
+    "captchaRequired": "يرجى إكمال رمز التحقق.",
+    "sendCode": "إرسال الرمز",
+    "sending": "جارٍ الإرسال…",
+    "notRegisteredAgent": "لا يوجد حساب وكيل لهذا البريد. يرجى التواصل مع المسؤول.",
+    "registeredAsKol": "هذا البريد مسجل كـ KOL. يرجى تسجيل الدخول عبر affiliate.linkchinamed.com.",
+    "checkFailed": "تعذر التحقق من البريد الإلكتروني. حاول مرة أخرى.",
+    "rateLimited": "الكثير من المحاولات. يرجى الانتظار والمحاولة مرة أخرى.",
+    "enterCodeTitle": "أدخل الرمز",
+    "codeSentTo": "أرسلنا رمزًا مكوّنًا من 6 أرقام إلى <email></email>",
+    "codePlaceholder": "رمز من 6 أرقام",
+    "verifyLogin": "تحقق وتسجيل الدخول",
+    "useDifferentEmail": "استخدام بريد إلكتروني آخر"
+  },
   "register": {
     "title": "انضم كشريك تابع",
     "name": "اسمك",

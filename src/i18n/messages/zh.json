@@ -23,6 +23,23 @@
     "rateLimited": "请求过于频繁,请稍后再试。",
     "registeredAsAgent": "此邮箱已注册为 Agent。请前往 agent.linkchinamed.com 登录。"
   },
+  "agentLogin": {
+    "pageTitle": "Agent 登录",
+    "introText": "请输入您的 Agent 邮箱以接收一次性验证码。",
+    "emailPlaceholder": "agent@example.com",
+    "captchaRequired": "请完成验证码。",
+    "sendCode": "发送验证码",
+    "sending": "发送中…",
+    "notRegisteredAgent": "未找到此邮箱对应的 Agent 账号,请联系管理员。",
+    "registeredAsKol": "此邮箱已注册为 KOL。请前往 affiliate.linkchinamed.com 登录。",
+    "checkFailed": "邮箱验证失败,请重试。",
+    "rateLimited": "尝试过于频繁,请稍后再试。",
+    "enterCodeTitle": "输入验证码",
+    "codeSentTo": "6 位验证码已发送至 <email></email>",
+    "codePlaceholder": "6 位验证码",
+    "verifyLogin": "验证并登录",
+    "useDifferentEmail": "使用其他邮箱"
+  },
   "register": {
     "title": "加入联盟营销合作伙伴",
     "name": "姓名",
