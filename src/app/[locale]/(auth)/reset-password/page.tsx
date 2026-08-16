@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { supabase } from "@/lib/supabase";
 import { useRouter, Link } from "@/navigation";
 
@@ -11,7 +11,6 @@ const inputClass =
 export default function ResetPasswordPage() {
   const t = useTranslations("resetPassword");
   const router = useRouter();
-  const locale = useLocale();
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -87,7 +86,7 @@ export default function ResetPasswordPage() {
     try {
       const { error: updateErr } = await supabase.auth.updateUser({ password });
       if (updateErr) throw updateErr;
-      setTimeout(() => router.push(`/${locale}/dashboard`), 1500);
+      setTimeout(() => router.push("/dashboard"), 1500);
     } catch {
       setError(t("errorGeneric"));
     } finally {
