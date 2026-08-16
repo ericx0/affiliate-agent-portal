@@ -952,6 +952,7 @@
     "successTitle": "请查收邮件",
     "successBody": "如果该邮箱对应账户存在,我们已发送密码重置链接。链接 30 分钟内有效。",
     "backToLogin": "返回登录",
+    "captchaRequired": "请完成安全验证。",
     "errorGeneric": "发送重置邮件失败。"
   },
   "resetPassword": {

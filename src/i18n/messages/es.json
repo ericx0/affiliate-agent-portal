@@ -952,6 +952,7 @@
     "successTitle": "Revisa tu correo",
     "successBody": "Si existe una cuenta con ese correo, hemos enviado un enlace para restablecer la contraseña. El enlace caduca en 30 minutos.",
     "backToLogin": "Volver a iniciar sesión",
+    "captchaRequired": "Por favor completa la verificación de seguridad.",
     "errorGeneric": "No se pudo enviar el correo de restablecimiento."
   },
   "resetPassword": {

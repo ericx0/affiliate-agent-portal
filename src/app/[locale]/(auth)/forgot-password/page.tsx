@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { supabase } from "@/lib/supabase";
 import { Link } from "@/navigation";
+import TurnstileLoader from "@/components/TurnstileLoader";
+
+const TURNSTILE_SITE_KEY =
+  process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ||
+  (process.env.NODE_ENV !== "production" ? "1x00000000000000000000AA" : "");
 
 const inputClass =
   "h-10 w-full rounded-md border border-gray-300 px-3 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30";
@@ -16,14 +21,55 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
 
+  const [mounted, setMounted] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    const render = () => {
+      if (!turnstileRef.current || !window.turnstile) return;
+      if (widgetIdRef.current) {
+        try { window.turnstile.remove(widgetIdRef.current); } catch {}
+      }
+      widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token: string) => setTurnstileToken(token),
+        "expired-callback": () => setTurnstileToken(""),
+        "error-callback": () => setTurnstileToken(""),
+      });
+    };
+    if (window.turnstile) {
+      render();
+    } else {
+      window.__lcm_turnstile_cb = render;
+    }
+    return () => {
+      if (widgetIdRef.current && window.turnstile) {
+        try { window.turnstile.remove(widgetIdRef.current); } catch {}
+        widgetIdRef.current = null;
+      }
+    };
+  }, [mounted]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!turnstileToken) {
+      setError(t("captchaRequired"));
+      return;
+    }
+
     setSending(true);
     try {
       const redirectTo = `${window.location.origin}/${locale}/reset-password`;
       const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo,
+        captchaToken: turnstileToken,
       });
       if (resetErr) throw resetErr;
       setSent(true);
@@ -37,6 +83,7 @@ export default function ForgotPasswordPage() {
   if (sent) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 space-y-3 text-center">
+        <TurnstileLoader />
         <h1 className="text-xl font-semibold">{t("successTitle")}</h1>
         <p className="text-sm text-gray-600">{t("successBody")}</p>
         <Link
@@ -51,6 +98,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-6 space-y-3">
+      <TurnstileLoader />
       <h1 className="text-xl font-semibold text-center">{t("title")}</h1>
       <p className="text-sm text-gray-600 text-center">{t("subtitle")}</p>
       <form onSubmit={handleSubmit} className="space-y-3">
@@ -63,10 +111,13 @@ export default function ForgotPasswordPage() {
           autoComplete="email"
           className={inputClass}
         />
+        <div className="flex justify-center">
+          {mounted && <div ref={turnstileRef} />}
+        </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
-          disabled={sending}
+          disabled={sending || !turnstileToken}
           className="w-full h-10 rounded-md bg-brand-500 text-white font-medium hover:opacity-90 disabled:opacity-50"
         >
           {sending ? t("submitting") : t("submit")}

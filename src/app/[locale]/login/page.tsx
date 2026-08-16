@@ -162,7 +162,7 @@ export default function AgentLoginPage() {
               alt="LinkChinaMed"
               width={160}
               height={48}
-              className="h-12 w-auto"
+              className="h-12 w-auto object-contain"
               priority
             />
             <h1 className="text-xl font-semibold">

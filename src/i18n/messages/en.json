@@ -952,6 +952,7 @@
     "successTitle": "Check your email",
     "successBody": "If an account exists for that email, we've sent a password reset link. The link expires in 30 minutes.",
     "backToLogin": "Back to sign in",
+    "captchaRequired": "Please complete the security check.",
     "errorGeneric": "Failed to send reset email."
   },
   "resetPassword": {
