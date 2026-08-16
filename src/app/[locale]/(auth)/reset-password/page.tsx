@@ -20,10 +20,56 @@ export default function ResetPasswordPage() {
   const [ready, setReady] = useState<boolean | null>(null);
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      setReady(!!data.session);
-    })();
+    let resolved = false;
+
+    // 0) Manual setSession from the recovery URL hash. @supabase/ssr 0.5.2's
+    //    detectSessionInUrl silently no-ops under the Cloudflare proxy
+    //    (storageKey origin `api.linkchinamed.com` ≠ JWT issuer
+    //    `bqjbvnkdhbrkdaraxnvm.supabase.co`), so drive setSession ourselves.
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const hashType = hashParams.get("type");
+    const hashAccess = hashParams.get("access_token");
+    const hashRefresh = hashParams.get("refresh_token");
+    if (hashType === "recovery" && hashAccess && hashRefresh) {
+      supabase.auth
+        .setSession({ access_token: hashAccess, refresh_token: hashRefresh })
+        .then(({ error: setErr }) => {
+          if (resolved || setErr) return;
+          resolved = true;
+          setReady(true);
+        });
+    }
+
+    // 1) Some SSR cookie flows already set a session before mount.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (resolved || !session) return;
+      resolved = true;
+      setReady(true);
+    });
+
+    // 2) Implicit recovery flow: tokens arrive via URL hash, then ssr
+    //    fires PASSWORD_RECOVERY once it has set the session.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event) => {
+        if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+          resolved = true;
+          setReady(true);
+          subscription.unsubscribe();
+        }
+      }
+    );
+
+    const timeoutId = window.setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      subscription.unsubscribe();
+      setReady(false);
+    }, 30000);
+
+    return () => {
+      subscription.unsubscribe();
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
