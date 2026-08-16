@@ -40,6 +40,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
             <Link href="/kols">{t("kols")}</Link>
             <Link href="/commissions">{t("commissions")}</Link>
             <Link href="/dashboard/settings/stripe">{t("settings")}</Link>
+            <Link href="/account">{t("account")}</Link>
           </div>
           <div className="flex items-center gap-3">
             <LocaleSwitcher />
