@@ -25,6 +25,7 @@
   },
   "agentLogin": {
     "pageTitle": "Agent Login",
+    "subtitle": "Agent Portal Sign In",
     "introText": "Enter your agent email to receive a one-time code.",
     "emailPlaceholder": "agent@example.com",
     "captchaRequired": "Please complete the captcha.",

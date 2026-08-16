@@ -25,6 +25,7 @@
   },
   "agentLogin": {
     "pageTitle": "Agent 登录",
+    "subtitle": "Agent 门户登录",
     "introText": "请输入您的 Agent 邮箱以接收一次性验证码。",
     "emailPlaceholder": "agent@example.com",
     "captchaRequired": "请完成验证码。",

@@ -25,6 +25,7 @@
   },
   "agentLogin": {
     "pageTitle": "Inicio de sesión del agente",
+    "subtitle": "Acceso para agentes",
     "introText": "Ingresa el correo del agente para recibir un código de un solo uso.",
     "emailPlaceholder": "agent@example.com",
     "captchaRequired": "Por favor completa el captcha.",

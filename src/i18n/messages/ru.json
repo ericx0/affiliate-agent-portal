@@ -25,6 +25,7 @@
   },
   "agentLogin": {
     "pageTitle": "Вход для агента",
+    "subtitle": "Вход для агентов",
     "introText": "Введите email агента, чтобы получить одноразовый код.",
     "emailPlaceholder": "agent@example.com",
     "captchaRequired": "Пожалуйста, пройдите проверку.",

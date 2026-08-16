@@ -25,6 +25,7 @@
   },
   "agentLogin": {
     "pageTitle": "تسجيل دخول الوكيل",
+    "subtitle": "تسجيل الدخول إلى بوابة الوكلاء",
     "introText": "أدخل بريد الوكيل الإلكتروني للحصول على رمز لمرة واحدة.",
     "emailPlaceholder": "agent@example.com",
     "captchaRequired": "يرجى إكمال رمز التحقق.",
