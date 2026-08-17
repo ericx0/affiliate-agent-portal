@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 function safeInternalPath(raw: string | null): string {
-  const fallback = "/zh/dashboard/settings/stripe";
+  const fallback = "/dashboard/settings/stripe";
   if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return fallback;
   return raw;
 }
@@ -47,10 +47,10 @@ function StripeMockInner() {
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-4">
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 max-w-md w-full">
         <h1 className="text-xl font-bold text-slate-900 mb-2">
-          🧪 Stripe Connect 认证模拟环境
+          🧪 Stripe Connect 认证模拟环境 (Dev Mock)
         </h1>
         <p className="text-sm text-slate-600 mb-4">
-          用于测试环境快速体验 Stripe 身份与银行账户绑定流程（KYC）。
+          用于在未配置正式 Stripe 密钥时，快速体验 Stripe 身份核验与银行卡收款绑定流程（KYC）。
         </p>
 
         <div className="bg-slate-50 rounded-lg p-3 mb-6">
@@ -59,7 +59,7 @@ function StripeMockInner() {
         </div>
 
         <p className="text-xs text-slate-500 mb-4">
-          在真实生产环境中，将跳转至 Stripe 官方托管页面进行身份证明（身份证/护照）、银行卡绑定及税务合规表填写。
+          在正式生产中（配置 <code>STRIPE_SECRET_KEY</code> 后），点击会直接跳转至 Stripe 官方托管页面进行身份证件识别、银行账号及税表签署。
         </p>
 
         <button
