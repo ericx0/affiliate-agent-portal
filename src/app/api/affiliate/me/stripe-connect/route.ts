@@ -57,10 +57,15 @@ export async function POST(req: NextRequest) {
 
     if (!isLive) {
       // Dev / Mock test mode
+      const referer = req.headers.get("referer") || "";
+      let locale = "zh";
+      const match = referer.match(/\/(zh|en|es|ar|ru)\//);
+      if (match) locale = match[1];
+
       const mockAccountId = promoter.stripe_account_id || `acct_mock_${promoter.id.slice(0, 8)}`;
       return NextResponse.json({
         data: {
-          url: `/dev/stripe-mock?account=${mockAccountId}&return=${encodeURIComponent("/zh/dashboard/settings/stripe")}`,
+          url: `/${locale}/dev/stripe-mock?account=${mockAccountId}&return=${encodeURIComponent(`/${locale}/dashboard/settings/stripe`)}`,
           mode: "dev-mock",
           accountId: mockAccountId,
         },
