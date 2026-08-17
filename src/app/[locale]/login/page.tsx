@@ -122,30 +122,33 @@ export default function AgentLoginPage() {
     }
 
     try {
-      const fnBase = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-      const checkRes = await fetch(
-        `${fnBase}/functions/v1/check-email?email=${encodeURIComponent(email)}`,
-        { headers: { "X-Turnstile-Token": turnstileToken } }
-      );
-      if (checkRes.status === 429) {
-        setError(t("rateLimited"));
-        return;
-      }
-      if (!checkRes.ok) {
+      const normalizedEmail = email.trim().toLowerCase();
+      const { data, error: rpcErr } = await supabase.rpc("affiliate_list_promoters", {
+        p_search: normalizedEmail,
+      });
+
+      if (rpcErr) {
+        console.error("affiliate_list_promoters check failed:", rpcErr);
         setError(t("checkFailed"));
         return;
       }
-      const checkData = (await checkRes.json()) as {
-        exists: boolean;
-        role: "kol" | "agent" | null;
-        registered: boolean;
-      };
-      if (!checkData.exists) {
+
+      const match = Array.isArray(data)
+        ? data.find((p: any) => p.email?.toLowerCase() === normalizedEmail)
+        : null;
+
+      if (!match || match.status !== "active") {
         setError(t("notRegisteredAgent"));
         return;
       }
-      if (checkData.role === "kol") {
+
+      if (match.role === "kol") {
         setError(t("registeredAsKol"));
+        return;
+      }
+
+      if (match.role !== "agent") {
+        setError(t("notRegisteredAgent"));
         return;
       }
     } catch {
