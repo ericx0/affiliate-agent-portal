@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { supabase } from "@/lib/supabase";
 import { apiFetch } from "@/lib/api";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
+import NotificationBell from "@/components/NotificationBell";
 import { Link, useRouter } from "@/navigation";
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -43,6 +44,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
             <Link href="/account">{t("account")}</Link>
           </div>
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <LocaleSwitcher />
             <button
               onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}

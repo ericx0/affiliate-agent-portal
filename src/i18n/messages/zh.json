@@ -975,5 +975,37 @@
     "errorWeak": "密码至少需要 8 位。",
     "errorExpired": "重置链接已过期,请重新申请。",
     "errorGeneric": "重置密码失败。"
+  },
+  "notifications": {
+    "title": "通知中心",
+    "unread": "未读",
+    "markAllRead": "全部已读",
+    "loading": "加载中",
+    "noNotifications": "暂无新通知",
+    "noNotificationsSub": "团队提成变动、KOL 入驻与提现进度将在此提醒",
+    "preferences": "通知设置",
+    "viewCommissions": "查看提成明细",
+    "justNow": "刚刚",
+    "ago": "前"
+  },
+  "notificationSettings": {
+    "title": "代理通知偏好设置",
+    "subtitle": "管理系统发送给您的代理团队邮件提醒与站内通知。",
+    "loadError": "加载偏好设置失败",
+    "saveError": "保存偏好设置失败",
+    "savedSuccess": "代理通知偏好已成功更新！",
+    "emailMasterTitle": "接收邮件通知",
+    "emailMasterDesc": "系统在团队关键业务事件发生时，向您的注册邮箱发送通知邮件",
+    "categoriesTitle": "事件通知分类",
+    "teamCommissionPendingTitle": "团队提成待入账提醒",
+    "teamCommissionPendingDesc": "当您下属的 KOL 产生订单并带来代理提成时提醒",
+    "teamCommissionPaidTitle": "团队提成结算到账提醒",
+    "teamCommissionPaidDesc": "当代理提成通过审核并正式结算打款时提醒",
+    "newKolTitle": "新 KOL 队员入驻提醒",
+    "newKolDesc": "当有新的创作者或 KOL 通过您的邀请码加入您的代理团队时提醒",
+    "payoutSentTitle": "出金打款已汇出提醒",
+    "payoutSentDesc": "当收益提现或 Stripe 出金成功汇出时提醒",
+    "payoutFailedTitle": "出金打款失败告警",
+    "payoutFailedDesc": "当提现因账户信息有误或银行异常失败时紧急告警"
   }
 }

@@ -975,5 +975,37 @@
     "errorWeak": "La contraseña debe tener al menos 8 caracteres.",
     "errorExpired": "El enlace de restablecimiento ha caducado. Solicita uno nuevo.",
     "errorGeneric": "No se pudo restablecer la contraseña."
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "unread": "no leídas",
+    "markAllRead": "Marcar todo como leído",
+    "loading": "Cargando",
+    "noNotifications": "Sin notificaciones nuevas",
+    "noNotificationsSub": "Aquí aparecerán las comisiones de equipo, actividad de KOL y pagos",
+    "preferences": "Ajustes",
+    "viewCommissions": "Ver comisiones",
+    "justNow": "ahora",
+    "ago": "hace"
+  },
+  "notificationSettings": {
+    "title": "Preferencias de Notificación de Agente",
+    "subtitle": "Administre las alertas por correo y notificaciones dentro de la app para su equipo de agentes.",
+    "loadError": "Error al cargar preferencias de notificación",
+    "saveError": "Error al guardar preferencias de notificación",
+    "savedSuccess": "¡Preferencias de notificación de agente actualizadas con éxito!",
+    "emailMasterTitle": "Notificaciones por Correo",
+    "emailMasterDesc": "Reciba alertas por correo en eventos clave de su equipo",
+    "categoriesTitle": "Categorías de Notificación",
+    "teamCommissionPendingTitle": "Comisiones de Equipo Pendientes",
+    "teamCommissionPendingDesc": "Aviso cuando un KOL de su equipo genera órdenes y comisiones de equipo",
+    "teamCommissionPaidTitle": "Comisiones de Equipo Pagadas",
+    "teamCommissionPaidDesc": "Aviso cuando las comisiones de equipo son aprobadas y liquidadas",
+    "newKolTitle": "Nuevo KOL en el Equipo",
+    "newKolDesc": "Aviso cuando un nuevo creador/KOL se une a su equipo con su código de invitación",
+    "payoutSentTitle": "Pago de Equipo Enviado",
+    "payoutSentDesc": "Aviso cuando los fondos de pago se transfieren a su cuenta",
+    "payoutFailedTitle": "Error en Pago de Equipo",
+    "payoutFailedDesc": "Alerta crítica si la transferencia falla por problemas en su cuenta"
   }
 }
