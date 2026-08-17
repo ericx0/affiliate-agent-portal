@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { QRCodeCanvas } from "qrcode.react";
 import {
   Users,
@@ -73,26 +74,62 @@ export default function AgentDashboard() {
     (async () => {
       try {
         setLoading(true);
+        let realRate = 5;
+        let promoterData: any = null;
+        try {
+          const { data: userRes } = await supabase.auth.getUser();
+          const userEmail = userRes?.user?.email?.trim().toLowerCase();
+          if (userEmail) {
+            const { data: list } = await supabase.rpc("affiliate_list_promoters", {
+              p_search: userEmail,
+            });
+            if (Array.isArray(list)) {
+              promoterData = list.find((p: any) => p.email?.toLowerCase() === userEmail);
+              if (promoterData?.commission_rate) {
+                realRate = Number(promoterData.commission_rate);
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Direct RPC agent lookup error:", e);
+        }
+
         const data = await apiFetch<AgentStats>("/api/affiliate/agent/stats").catch(
           () => null
         );
-        // No fabricated fallback numbers: show real zeros when the API has
-        // no data yet.
-        setStats(
-          data ?? {
-            totalKols: 0,
-            activeKols: 0,
-            totalPaid: 0,
-            totalPending: 0,
-            totalApproved: 0,
-            agentRate: 5,
-          }
-        );
+
+        const currentStats: AgentStats = data ?? {
+          totalKols: promoterData?.total_referrals ?? 0,
+          activeKols: promoterData?.total_referrals ?? 0,
+          totalPaid: Number(promoterData?.total_paid ?? 0),
+          totalPending: Number(promoterData?.total_pending ?? 0),
+          totalApproved: Number(promoterData?.total_approved ?? 0),
+          agentRate: realRate,
+        };
+        if (!data) {
+          currentStats.agentRate = realRate;
+        }
+        setStats(currentStats);
 
         const inviteData = await apiFetch<InviteCodeResponse>(
           "/api/affiliate/agent/invite-code"
         ).catch(() => null);
-        setInvite(inviteData);
+
+        const agentCode =
+          inviteData?.agent_invite_code ||
+          promoterData?.agent_invite_code ||
+          promoterData?.referral_code ||
+          promoterData?.id;
+
+        setInvite(
+          inviteData ??
+            (agentCode
+              ? {
+                  agent_invite_code: agentCode,
+                  invite_link: `https://affiliate.linkchinamed.com/register?ref=${agentCode}`,
+                }
+              : null)
+        );
 
         // Top KOLs: the endpoint orders by created_at, so rank client-side.
         const team = await apiFetch<{ data: TeamKol[] }>(
