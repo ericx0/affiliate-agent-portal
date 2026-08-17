@@ -14,34 +14,13 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase.auth.getUser();
+    supabase.auth.getUser().then(({ data }) => {
       if (!data.user) {
         router.push("/login");
-        return;
-      }
-      try {
-        const email = data.user.email?.trim().toLowerCase();
-        if (email) {
-          const { data: promoters, error: rpcErr } = await supabase.rpc(
-            "affiliate_list_promoters",
-            { p_search: email }
-          );
-          if (!rpcErr && Array.isArray(promoters)) {
-            const match = promoters.find((p: any) => p.email?.toLowerCase() === email);
-            if (match && match.role === "agent" && match.status === "active") {
-              setLoading(false);
-              return;
-            }
-          }
-        }
-        // Fallback check
-        await apiFetch("/api/affiliate/agent/stats");
+      } else {
         setLoading(false);
-      } catch {
-        router.push("/login?error=not_an_agent");
       }
-    })();
+    });
   }, [router]);
 
   if (loading) return <div className="p-8">{t("loading")}</div>;
