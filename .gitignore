@@ -32,3 +32,4 @@ coverage/
 # Test reports
 playwright-report/
 test-results/
+.env*.local

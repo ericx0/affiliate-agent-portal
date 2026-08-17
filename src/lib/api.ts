@@ -1,10 +1,5 @@
 import { supabase } from "./supabase";
 
-// Vercel CLI inserts trailing newlines on env vars; without trim() the URL
-// becomes e.g. `https://api.linkchinamed.com\n` and every fetch returns
-// a confusing network error. See memory vercel-env-trailing-newline.
-const API_BASE = (process.env.NEXT_PUBLIC_AFFILIATE_API_URL || "").trim();
-
 export type ApiFetchOptions = Omit<RequestInit, "body"> & {
   body?: unknown;
   /** Set to true for endpoints that must not send Authorization (e.g. the very first call before the user has a session). */
@@ -27,7 +22,7 @@ function getCachedSession() {
 
 /**
  * Thin wrapper around fetch that:
- *  - prefixes the configured NEXT_PUBLIC_AFFILIATE_API_URL
+ *  - uses the path as-is (Next.js rewrite proxies /api/affiliate/* to the backend)
  *  - JSON-encodes `body` if it's an object
  *  - attaches `Authorization: Bearer <supabase session access_token>` unless `noAuth: true`
  *  - throws an Error with the server's `error.message` on non-2xx
@@ -53,8 +48,9 @@ export async function apiFetch<T = unknown>(
     }
   }
 
-  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
-  const res = await fetch(url, {
+  // Absolute URLs pass through unchanged; everything else is treated as a
+  // relative path on this origin so Next.js rewrites() proxy it.
+  const res = await fetch(path, {
     ...rest,
     headers: finalHeaders,
     body: body === undefined ? undefined : JSON.stringify(body),

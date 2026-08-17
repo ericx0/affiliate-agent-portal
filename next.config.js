@@ -18,6 +18,22 @@ if (process.env.NODE_ENV === "production") {
   }
 }
 
+// Defensive: api.linkchinamed.com is a Cloudflare Worker → Supabase PostgREST
+// host, NOT the affiliate-service. Setting NEXT_PUBLIC_AFFILIATE_API_URL to it
+// routes requests to the wrong backend silently (Bug 2.1).
+const FORBIDDEN_AFFILIATE_HOSTS = ["https://api.linkchinamed.com"];
+if (process.env.NEXT_PUBLIC_AFFILIATE_API_URL) {
+  const trimmed = process.env.NEXT_PUBLIC_AFFILIATE_API_URL.trim();
+  if (FORBIDDEN_AFFILIATE_HOSTS.includes(trimmed)) {
+    throw new Error(
+      "[affiliate-portal] NEXT_PUBLIC_AFFILIATE_API_URL points to " +
+        trimmed +
+        " which is Cloudflare Worker → Supabase PostgREST, NOT affiliate-service. " +
+        "Use Next.js rewrite (see rewrites() in this file).",
+    );
+  }
+}
+
 const createNextIntlPlugin = require("next-intl/plugin");
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
@@ -31,6 +47,18 @@ const nextConfig = {
     return [
       { source: "/", destination: "/en", permanent: false },
       { source: "/dev/:path*", destination: "/en/404", permanent: false },
+    ];
+  },
+  // Proxy /api/affiliate/* to affiliate-service on Vercel. Frontend uses
+  // relative URLs; this keeps the public origin free of cross-service
+  // leakage and avoids CORS preflights (Bug 2.1).
+  async rewrites() {
+    return [
+      {
+        source: "/api/affiliate/:path*",
+        destination:
+          "https://affiliate-service-rho.vercel.app/api/affiliate/:path*",
+      },
     ];
   },
 };
