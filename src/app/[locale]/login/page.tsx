@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/navigation";
+import { useRouter, Link } from "@/navigation";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 import TurnstileLoader from "@/components/TurnstileLoader";
 import { supabase } from "@/lib/supabase";
@@ -16,6 +16,8 @@ const TURNSTILE_SITE_KEY =
 // See memory: portal-login-ui-alignment-2026-08-16.
 const inputClass =
   "h-10 w-full rounded-md border border-gray-300 px-3 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30";
+
+type Mode = "otp" | "password";
 
 // Sanitize the `next` query param so a crafted link can't redirect a
 // logged-in agent off-site. Only relative single-leading-slash allowed.
@@ -30,7 +32,9 @@ export default function AgentLoginPage() {
   const t = useTranslations("agentLogin");
   const router = useRouter();
 
+  const [mode, setMode] = useState<Mode>("otp");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -70,6 +74,43 @@ export default function AgentLoginPage() {
       }
     };
   }, [mounted]);
+
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!turnstileToken) {
+      setError(t("captchaRequired"));
+      return;
+    }
+
+    setSending(true);
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+        options: { captchaToken: turnstileToken },
+      });
+
+      if (signInError) {
+        setError(
+          signInError.message.toLowerCase().includes("credential")
+            ? t("passwordErrorInvalid")
+            : signInError.message || t("passwordErrorGeneric")
+        );
+        setTurnstileToken("");
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const target = params.get("next");
+      router.push(safeNextPath(target ?? undefined));
+    } catch (e: any) {
+      setError(e.message || t("passwordErrorGeneric"));
+    } finally {
+      setSending(false);
+    }
+  };
 
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,7 +212,72 @@ export default function AgentLoginPage() {
             <p className="text-sm text-gray-600">{t("subtitle")}</p>
           </div>
 
-          {!sent ? (
+          <div className="mb-4 grid grid-cols-2 gap-1 rounded-md bg-gray-100 p-1">
+            {(
+              [
+                ["otp", t("tabOtp")],
+                ["password", t("tabPassword")],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => {
+                  setMode(key);
+                  setError("");
+                  setSent(false);
+                }}
+                className={
+                  "rounded-md px-3 py-1.5 text-sm transition-colors " +
+                  (mode === key
+                    ? "bg-white font-medium shadow-sm text-gray-900"
+                    : "text-gray-500 hover:text-gray-700")
+                }
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {mode === "password" ? (
+            <form onSubmit={handlePasswordLogin} className="space-y-3">
+              <input
+                type="email"
+                required
+                placeholder={t("emailPlaceholder")}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+              />
+              <input
+                type="password"
+                required
+                placeholder={t("passwordPlaceholder")}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputClass}
+              />
+              <div className="flex justify-end">
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-brand-600 hover:text-brand-700 hover:underline"
+                >
+                  {t("forgotPassword")}
+                </Link>
+              </div>
+              <div className="flex justify-center">
+                {mounted && <div ref={turnstileRef} />}
+              </div>
+              {error && <p className="text-sm text-red-600">{error}</p>}
+              <button
+                type="submit"
+                disabled={sending || !turnstileToken}
+                className="w-full h-10 rounded-md bg-brand-500 text-white font-medium hover:opacity-90 disabled:opacity-50"
+              >
+                {sending ? t("signingIn") : t("signIn")}
+              </button>
+            </form>
+          ) : !sent ? (
             <form onSubmit={sendCode} className="space-y-3">
               <p className="text-sm text-gray-600">{t("introText")}</p>
               <input
