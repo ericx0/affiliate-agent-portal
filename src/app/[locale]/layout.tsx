@@ -26,9 +26,13 @@ export async function generateMetadata({
 
   return {
     metadataBase: new URL(SITE_URL),
-    title: "LinkChinaMed Affiliate Portal",
+    title: "LinkChinaMed Agents",
     description:
-      "Promoter dashboard for the LinkChinaMed partner program — track referrals, payouts and marketing assets.",
+      "Agent dashboard for the LinkChinaMed partner program — track referrals, payouts and commissions.",
+    icons: {
+      icon: "/favicon.ico",
+      apple: "/icon-192x192.png",
+    },
     alternates: {
       canonical: `/${locale}`,
       languages,
