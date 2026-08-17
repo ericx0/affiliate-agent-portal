@@ -1,6 +1,9 @@
 import { supabase } from "./supabase";
 
-const API_BASE = process.env.NEXT_PUBLIC_AFFILIATE_API_URL || "";
+// Vercel CLI inserts trailing newlines on env vars; without trim() the URL
+// becomes e.g. `https://api.linkchinamed.com\n` and every fetch returns
+// a confusing network error. See memory vercel-env-trailing-newline.
+const API_BASE = (process.env.NEXT_PUBLIC_AFFILIATE_API_URL || "").trim();
 
 export type ApiFetchOptions = Omit<RequestInit, "body"> & {
   body?: unknown;
