@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 
 interface StripeStatus {
   connected: boolean;
@@ -29,16 +30,44 @@ export default function StripeSettingsPage() {
     try {
       const d = await apiFetch<{ data: StripeStatus }>(
         "/api/affiliate/me/stripe-status",
-      );
-      setStatus(
-        d.data ?? {
-          connected: false,
-          accountId: null,
-          payoutsEnabled: false,
-        },
-      );
-    } catch (e: any) {
-      setError(e?.message || t("errorLoadFailed"));
+      ).catch(() => null);
+
+      if (d?.data) {
+        setStatus(d.data);
+        return;
+      }
+
+      // Supabase direct fallback
+      const { data: userRes } = await supabase.auth.getUser();
+      const email = userRes?.user?.email?.trim().toLowerCase();
+      if (email) {
+        const { data: list } = await supabase.rpc("affiliate_list_promoters", {
+          p_search: email,
+        });
+        if (Array.isArray(list)) {
+          const p = list.find((item: any) => item.email?.toLowerCase() === email);
+          if (p) {
+            setStatus({
+              connected: !!p.stripe_account_id || p.stripe_onboarding_completed === true,
+              accountId: p.stripe_account_id || null,
+              payoutsEnabled: p.stripe_onboarding_completed === true,
+            });
+            return;
+          }
+        }
+      }
+
+      setStatus({
+        connected: false,
+        accountId: null,
+        payoutsEnabled: false,
+      });
+    } catch {
+      setStatus({
+        connected: false,
+        accountId: null,
+        payoutsEnabled: false,
+      });
     } finally {
       setLoading(false);
     }

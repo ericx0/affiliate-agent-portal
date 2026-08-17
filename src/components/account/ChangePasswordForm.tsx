@@ -9,7 +9,6 @@ const inputClass =
 
 export default function ChangePasswordForm() {
   const t = useTranslations("account.changePassword");
-  const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -34,20 +33,10 @@ export default function ChangePasswordForm() {
       const email = userData.user?.email;
       if (!email) throw new Error("no-email");
 
-      const { error: signInErr } = await supabase.auth.signInWithPassword({
-        email,
-        password: current,
-      });
-      if (signInErr) {
-        setError(t("errorCurrent"));
-        return;
-      }
-
       const { error: updateErr } = await supabase.auth.updateUser({ password: next });
       if (updateErr) throw updateErr;
 
       setSuccess(true);
-      setCurrent("");
       setNext("");
       setConfirm("");
     } catch {
@@ -59,15 +48,6 @@ export default function ChangePasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <input
-        type="password"
-        placeholder={t("currentPlaceholder")}
-        value={current}
-        onChange={(e) => setCurrent(e.target.value)}
-        required
-        autoComplete="current-password"
-        className={inputClass}
-      />
       <input
         type="password"
         placeholder={t("newPlaceholder")}
