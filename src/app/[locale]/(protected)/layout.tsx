@@ -21,7 +21,21 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         return;
       }
       try {
-        // agent-auth validates role='agent'; 403 -> not an agent.
+        const email = data.user.email?.trim().toLowerCase();
+        if (email) {
+          const { data: promoters, error: rpcErr } = await supabase.rpc(
+            "affiliate_list_promoters",
+            { p_search: email }
+          );
+          if (!rpcErr && Array.isArray(promoters)) {
+            const match = promoters.find((p: any) => p.email?.toLowerCase() === email);
+            if (match && match.role === "agent" && match.status === "active") {
+              setLoading(false);
+              return;
+            }
+          }
+        }
+        // Fallback check
         await apiFetch("/api/affiliate/agent/stats");
         setLoading(false);
       } catch {
