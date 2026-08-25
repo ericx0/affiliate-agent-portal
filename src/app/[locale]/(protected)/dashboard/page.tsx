@@ -7,6 +7,8 @@ import { supabase } from "@/lib/supabase";
 import { QRCodeCanvas } from "qrcode.react";
 import { generateMedicalTravelPoster } from "@/lib/poster-generator";
 import { OutreachScriptsModal } from "@/components/OutreachScriptsModal";
+import { AgentDocsModal } from "@/components/AgentDocsModal";
+import { AgentEnablementBanner } from "@/components/AgentEnablementBanner";
 import {
   Users,
   Award,
@@ -62,6 +64,7 @@ export default function AgentDashboard() {
   const [copied, setCopied] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [showScriptsModal, setShowScriptsModal] = useState(false);
+  const [showDocsModal, setShowDocsModal] = useState(false);
   const [generatingPoster, setGeneratingPoster] = useState(false);
   const [topKols, setTopKols] = useState<TeamKol[]>([]);
   const qrWrapperRef = useRef<HTMLDivElement>(null);
@@ -200,57 +203,18 @@ export default function AgentDashboard() {
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-16">
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">{t("pageTitle")}</h1>
         <p className="text-sm text-slate-500 mt-1">{t("dashboardSubtitle")}</p>
       </div>
 
-      <div className="bg-gradient-to-br from-emerald-900 via-slate-900 to-slate-950 rounded-3xl p-6 md:p-8 text-white shadow-xl border border-emerald-500/20 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
-                <Sparkles className="w-4 h-4" />
-                {t("hubTitle")}
-              </div>
-              <h2 className="text-xl md:text-2xl font-black text-white">{t("hubSubtitle")}</h2>
-            </div>
-            <div className="flex flex-wrap items-center gap-2.5">
-              <button
-                onClick={() => setShowScriptsModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/15 backdrop-blur-md"
-              >
-                <BookOpen className="w-4 h-4 text-amber-300" />
-                {t("btnOutreachScripts")}
-              </button>
-              <button
-                onClick={() => setShowQrModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-emerald-900/40"
-              >
-                <QrCode className="w-4 h-4" />
-                {t("btnSavePoster")}
-              </button>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-2 backdrop-blur-sm">
-              <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
-                <Users className="w-4 h-4" />
-                {t("roleCardTitle")}
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed">{t("roleCardDesc")}</p>
-            </div>
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-2 backdrop-blur-sm">
-              <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
-                <GraduationCap className="w-4 h-4" />
-                {t("trainingCardTitle")}
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed">{t("trainingCardDesc")}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Independent Agent Enablement & Playbook Banner */}
+      <AgentEnablementBanner
+        onOpenDocs={() => setShowDocsModal(true)}
+        onOpenScripts={() => setShowScriptsModal(true)}
+        onOpenPoster={() => setShowQrModal(true)}
+      />
 
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
@@ -407,6 +371,15 @@ export default function AgentDashboard() {
         <p>{t("ruleLevel3")}</p>
       </div>
 
+      {/* Complete Agent Playbook & Training Hub Modal */}
+      <AgentDocsModal
+        open={showDocsModal}
+        onOpenChange={setShowDocsModal}
+        onOpenScripts={() => setShowScriptsModal(true)}
+        onOpenPoster={() => setShowQrModal(true)}
+      />
+
+      {/* Outreach Pitch Scripts Modal */}
       <OutreachScriptsModal
         open={showScriptsModal}
         onOpenChange={setShowScriptsModal}
@@ -414,6 +387,7 @@ export default function AgentDashboard() {
         inviteLink={inviteLink}
       />
 
+      {/* Invite QR poster modal */}
       {showQrModal && inviteLink && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full space-y-6 relative shadow-2xl">
