@@ -222,7 +222,15 @@
     "updateFailed": "❌ Update failed: {error}",
     "goalToLevel2": "Recruit {count} more KOLs to reach Level 2 (8% commission)",
     "goalToLevel3": "Recruit {count} more KOLs to reach Level 3 (10% commission)",
-    "progressCount": "{count} KOLs"
+    "progressCount": "{count} KOLs",
+    "hubTitle": "Agent Mission & Enablement Hub",
+    "hubSubtitle": "Your goal: recruit & empower top creators. We support you with weekly training, pitch scripts, and high-converting posters.",
+    "roleCardTitle": "Your Core Role",
+    "roleCardDesc": "Recruit health, wellness, and lifestyle KOLs. Earn 5%–10% override commissions when their clients book medical travel services.",
+    "trainingCardTitle": "Training & Resources",
+    "trainingCardDesc": "Access tested multi-language DM/Email pitch scripts, hospital media kits, and live webinars to close creators easily.",
+    "btnOutreachScripts": "Outreach Pitch Scripts",
+    "btnSavePoster": "Save Marketing Poster"
   },
   "codes": {
     "failedToGenerate": "Failed to generate code",

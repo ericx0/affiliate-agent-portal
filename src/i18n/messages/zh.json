@@ -222,7 +222,15 @@
     "updateFailed": "❌ 更新失败：{error}",
     "goalToLevel2": "再招募 {count} 位 KOL 即可升至 Level 2（8% 佣金）",
     "goalToLevel3": "再招募 {count} 位 KOL 即可升至 Level 3（10% 佣金）",
-    "progressCount": "{count} 位 KOL"
+    "progressCount": "{count} 位 KOL",
+    "hubTitle": "代理使命与赋能中心",
+    "hubSubtitle": "您的核心定位是开拓招募优质创作者。平台提供定期培训、多语言话术与高清海报全方位赋能。",
+    "roleCardTitle": "您的核心定位",
+    "roleCardDesc": "开拓并招募健康、养生及海外生活方式 KOL 创作者。当下级团队带来客户订单时，您将持续获得 5%–10% 的团队管理佣金。",
+    "trainingCardTitle": "平台培训与赋能支持",
+    "trainingCardDesc": "提供多语言高转化招募话术库（DM/Email 模板）、三甲官方素材及定期线上培训，助力轻松成单。",
+    "btnOutreachScripts": "KOL 招募话术库",
+    "btnSavePoster": "下载宣传海报"
   },
   "codes": {
     "failedToGenerate": "生成失败",
