@@ -6,9 +6,6 @@ import { apiFetch } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { QRCodeCanvas } from "qrcode.react";
 import { generateMedicalTravelPoster } from "@/lib/poster-generator";
-import { OutreachScriptsModal } from "@/components/OutreachScriptsModal";
-import { AgentDocsModal } from "@/components/AgentDocsModal";
-import { AgentEnablementBanner } from "@/components/AgentEnablementBanner";
 import {
   Users,
   Award,
@@ -17,12 +14,9 @@ import {
   Copy,
   Check,
   Share2,
-  Sparkles,
   QrCode,
   Download,
   X,
-  BookOpen,
-  GraduationCap,
   Loader2,
 } from "lucide-react";
 
@@ -63,8 +57,6 @@ export default function AgentDashboard() {
   const [invite, setInvite] = useState<InviteCodeResponse | null>(null);
   const [copied, setCopied] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
-  const [showScriptsModal, setShowScriptsModal] = useState(false);
-  const [showDocsModal, setShowDocsModal] = useState(false);
   const [generatingPoster, setGeneratingPoster] = useState(false);
   const [topKols, setTopKols] = useState<TeamKol[]>([]);
   const qrWrapperRef = useRef<HTMLDivElement>(null);
@@ -209,13 +201,7 @@ export default function AgentDashboard() {
         <p className="text-sm text-slate-500 mt-1">{t("dashboardSubtitle")}</p>
       </div>
 
-      {/* Independent Agent Enablement & Playbook Banner */}
-      <AgentEnablementBanner
-        onOpenDocs={() => setShowDocsModal(true)}
-        onOpenScripts={() => setShowScriptsModal(true)}
-        onOpenPoster={() => setShowQrModal(true)}
-      />
-
+      {/* Tier & Level Badge Card */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-xs font-semibold backdrop-blur-md">
@@ -364,28 +350,13 @@ export default function AgentDashboard() {
         )}
       </div>
 
+      {/* Rules Banner */}
       <div className="bg-slate-900 text-slate-300 p-6 rounded-2xl text-xs space-y-2">
         <div className="font-bold text-white text-sm">{t("rulesTitle")}</div>
         <p>{t("ruleLevel1")}</p>
         <p>{t("ruleLevel2")}</p>
         <p>{t("ruleLevel3")}</p>
       </div>
-
-      {/* Complete Agent Playbook & Training Hub Modal */}
-      <AgentDocsModal
-        open={showDocsModal}
-        onOpenChange={setShowDocsModal}
-        onOpenScripts={() => setShowScriptsModal(true)}
-        onOpenPoster={() => setShowQrModal(true)}
-      />
-
-      {/* Outreach Pitch Scripts Modal */}
-      <OutreachScriptsModal
-        open={showScriptsModal}
-        onOpenChange={setShowScriptsModal}
-        inviteCode={invite?.agent_invite_code || "—"}
-        inviteLink={inviteLink}
-      />
 
       {/* Invite QR poster modal */}
       {showQrModal && inviteLink && (
