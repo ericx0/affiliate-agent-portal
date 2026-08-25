@@ -1,9 +1,8 @@
-"use client";
-
+import { Link } from "@/navigation";
 import { Sparkles, BookOpen, MessageSquare, QrCode, Users, GraduationCap, ShieldCheck, ArrowRight } from "lucide-react";
 
 interface AgentEnablementBannerProps {
-  onOpenDocs: () => void;
+  onOpenDocs?: () => void;
   onOpenScripts: () => void;
   onOpenPoster: () => void;
 }
@@ -37,13 +36,13 @@ export function AgentEnablementBanner({
 
           {/* Action CTAs */}
           <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
-            <button
-              onClick={onOpenDocs}
+            <Link
+              href="/playbook"
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black transition-all shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98]"
             >
               <BookOpen className="w-4 h-4" />
               📖 查阅实战手册 (Playbook)
-            </button>
+            </Link>
 
             <button
               onClick={onOpenScripts}
@@ -65,9 +64,9 @@ export function AgentEnablementBanner({
 
         {/* 3 Overview Pillars */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div
-            onClick={onOpenDocs}
-            className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/40 rounded-2xl p-5 space-y-2.5 backdrop-blur-sm transition-all cursor-pointer"
+          <Link
+            href="/playbook"
+            className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/40 rounded-2xl p-5 space-y-2.5 backdrop-blur-sm transition-all cursor-pointer block"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
@@ -79,11 +78,11 @@ export function AgentEnablementBanner({
             <p className="text-xs text-slate-300 leading-relaxed">
               招募并辅导海外健康/养生/生活方式 KOL 创作者。下级出单即可终身享受 5%–10% 团队管理极差佣金。
             </p>
-          </div>
+          </Link>
 
-          <div
-            onClick={onOpenDocs}
-            className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/40 rounded-2xl p-5 space-y-2.5 backdrop-blur-sm transition-all cursor-pointer"
+          <Link
+            href="/playbook"
+            className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/40 rounded-2xl p-5 space-y-2.5 backdrop-blur-sm transition-all cursor-pointer block"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
@@ -95,11 +94,11 @@ export function AgentEnablementBanner({
             <p className="text-xs text-slate-300 leading-relaxed">
               每周定期举办线上培训与答疑会，后台通过邮件广播同步会议链接；提供三甲官方素材与多语言邀约模板。
             </p>
-          </div>
+          </Link>
 
-          <div
-            onClick={onOpenDocs}
-            className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/40 rounded-2xl p-5 space-y-2.5 backdrop-blur-sm transition-all cursor-pointer"
+          <Link
+            href="/playbook"
+            className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/40 rounded-2xl p-5 space-y-2.5 backdrop-blur-sm transition-all cursor-pointer block"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-blue-300 font-bold text-sm">
@@ -111,7 +110,7 @@ export function AgentEnablementBanner({
             <p className="text-xs text-slate-300 leading-relaxed">
               零排队直通顶级三甲公立医院国际部，省 30%–70% 医疗费用，1对1双语陪诊，医院直接收费零差价。
             </p>
-          </div>
+          </Link>
         </div>
       </div>
     </div>
