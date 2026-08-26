@@ -17,6 +17,17 @@ const PROTECTED = new RegExp(
 
 export async function middleware(request: NextRequest) {
   const response = intlMiddleware(request);
+  const { pathname } = request.nextUrl;
+
+  // Skip auth entirely on public pages (login, register, forgot/reset
+  // password, marketing, locale-only fallbacks). Avoids:
+  //   - getUser() latency on every public hit
+  //   - stale-cookie hangs on browsers carrying an old Supabase session
+  //   - re-validating tokens the page doesn't need
+  // PROTECTED paths still call getUser() below.
+  if (!PROTECTED.test(pathname)) {
+    return response;
+  }
 
   // Bind a Supabase server client to the request/response cookies so the
   // session is refreshed and readable at the edge (no client-side flash).
@@ -56,8 +67,7 @@ export async function middleware(request: NextRequest) {
     user = null;
   }
 
-  const { pathname } = request.nextUrl;
-  if (PROTECTED.test(pathname) && !user) {
+  if (!user) {
     const locale = pathname.split("/")[1] || "en";
     const loginUrl = new URL(`/${locale}/login`, request.url);
     loginUrl.searchParams.set("redirect", pathname);
