@@ -4,24 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
-import { QRCodeCanvas } from "qrcode.react";
-import {
-  generateMedicalTravelPoster,
-  PosterFormat,
-  POSTER_DIMENSIONS,
-} from "@/lib/poster-generator";
+import { Link } from "@/navigation";
 import {
   Users,
   Award,
   TrendingUp,
   Wallet,
-  Copy,
-  Check,
-  Share2,
   QrCode,
-  Download,
-  X,
-  Loader2,
+  Check,
+  Copy,
 } from "lucide-react";
 
 const TIER_RATE_BY_LEVEL: Record<number, { nextRate: number | null; minKols: number }> = {
@@ -60,11 +51,7 @@ export default function AgentDashboard() {
   const [loading, setLoading] = useState(true);
   const [invite, setInvite] = useState<InviteCodeResponse | null>(null);
   const [copied, setCopied] = useState(false);
-  const [showQrModal, setShowQrModal] = useState(false);
-  const [selectedFormat, setSelectedFormat] = useState<PosterFormat>("story");
-  const [generatingPoster, setGeneratingPoster] = useState(false);
   const [topKols, setTopKols] = useState<TeamKol[]>([]);
-  const qrWrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -172,33 +159,6 @@ export default function AgentDashboard() {
 
   const inviteLink = invite?.invite_link ?? "";
 
-  const handleDownloadQrPoster = async () => {
-    const canvas = qrWrapperRef.current?.querySelector("canvas");
-    if (!canvas) return;
-    try {
-      setGeneratingPoster(true);
-      const posterDataUrl = await generateMedicalTravelPoster({
-        qrCanvas: canvas as HTMLCanvasElement,
-        code: invite?.agent_invite_code || "PARTNER",
-        role: "agent",
-        format: selectedFormat,
-      });
-      const a = document.createElement("a");
-      a.href = posterDataUrl;
-      a.download = `linkchinamed-agent-poster-${selectedFormat}-${invite?.agent_invite_code || "partner"}.png`;
-      a.click();
-    } catch (e) {
-      console.error("Poster generation failed:", e);
-      const url = (canvas as HTMLCanvasElement).toDataURL("image/png");
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "linkchinamed-agent-invite-qr.png";
-      a.click();
-    } finally {
-      setGeneratingPoster(false);
-    }
-  };
-
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-16">
       <div>
@@ -283,13 +243,13 @@ export default function AgentDashboard() {
             <h2 className="text-lg font-bold text-slate-900">{t("inviteCardTitle")}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{t("inviteCardDesc")}</p>
           </div>
-          <button
-            onClick={() => setShowQrModal(true)}
+          <Link
+            href="/marketing/posters"
             className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold transition-colors self-start sm:self-auto shadow-sm"
           >
             <QrCode className="w-4 h-4 text-emerald-700" />
             生成营销海报 / 二维码
-          </button>
+          </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-1">
@@ -361,71 +321,6 @@ export default function AgentDashboard() {
         <p>{t("ruleLevel3")}</p>
       </div>
 
-      {showQrModal && inviteLink && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-5 relative shadow-2xl">
-            <button onClick={() => setShowQrModal(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 rounded-full"><X className="w-5 h-5" /></button>
-            <div className="text-center space-y-1">
-              <h3 className="text-lg font-bold text-slate-900">{t("qrModalTitle")}</h3>
-              <p className="text-xs text-slate-500">{t("qrModalDesc")}</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-5 rounded-2xl shadow-inner flex flex-col items-center justify-center text-white space-y-3">
-              <div className="bg-white p-3 rounded-xl shadow-lg" ref={qrWrapperRef}>
-                <QRCodeCanvas value={inviteLink} size={160} level="H" includeMargin={true} />
-              </div>
-              <div className="text-center">
-                <div className="font-bold text-sm tracking-wide">LinkChinaMed Partner</div>
-                <div className="text-[11px] text-emerald-100 mt-0.5">Invite Code: {invite?.agent_invite_code}</div>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-slate-700 block">选择海报尺寸 (Dimensions & Format):</label>
-              <div className="grid grid-cols-3 gap-2">
-                {(["story", "square", "flyer"] as const).map((fmt) => {
-                  const info = POSTER_DIMENSIONS[fmt];
-                  const active = selectedFormat === fmt;
-                  return (
-                    <button
-                      key={fmt}
-                      type="button"
-                      onClick={() => setSelectedFormat(fmt)}
-                      className={`p-2.5 rounded-xl border text-center transition-all ${
-                        active
-                          ? "border-emerald-500 bg-emerald-50 text-emerald-900 font-bold shadow-sm ring-1 ring-emerald-400"
-                          : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
-                      }`}
-                    >
-                      <div className="text-xs font-bold">{info.label}</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">{info.ratio}</div>
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="text-[11px] text-slate-400">{POSTER_DIMENSIONS[selectedFormat].desc}</p>
-            </div>
-
-            <button
-              onClick={handleDownloadQrPoster}
-              disabled={generatingPoster}
-              className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-emerald-900/20 inline-flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {generatingPoster ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  正在合成 {POSTER_DIMENSIONS[selectedFormat].label} 海报...
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4" />
-                  保存 {POSTER_DIMENSIONS[selectedFormat].label} 海报
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

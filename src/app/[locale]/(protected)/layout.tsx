@@ -38,6 +38,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
               <BookOpen className="w-4 h-4 text-emerald-600" />
               {t("playbook")}
             </Link>
+            <Link href="/marketing/posters" className="text-emerald-600 font-medium hover:text-emerald-700">海报图库</Link>
             <Link href="/dashboard/settings/stripe">{t("settings")}</Link>
             <Link href="/account">{t("account")}</Link>
           </div>

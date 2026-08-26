@@ -5,12 +5,16 @@
 
 export type PosterFormat = "story" | "square" | "flyer";
 
+export type CopyType = "b2c" | "b2b";
+
 export interface PosterOptions {
   qrCanvas: HTMLCanvasElement;
   code: string;
   role: "agent" | "kol";
   userName?: string;
   format?: PosterFormat;
+  aiBackgroundUrl?: string; // This will now be used as the Hero Image
+  copyType?: CopyType; // "b2c" for patients, "b2b" for agents
 }
 
 export const POSTER_DIMENSIONS: Record<PosterFormat, { width: number; height: number; label: string; ratio: string; desc: string }> = {
@@ -47,41 +51,40 @@ export async function generateMedicalTravelPoster(opts: PosterOptions): Promise<
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Could not get 2d canvas context");
 
-  // 1. Background Gradient (Luxury Dark Emerald to Deep Slate/Navy)
-  const bgGrad = ctx.createLinearGradient(0, 0, width, height);
-  bgGrad.addColorStop(0, "#064e3b"); // Deep emerald
-  bgGrad.addColorStop(0.35, "#065f46"); // Emerald
-  bgGrad.addColorStop(0.75, "#0f172a"); // Slate 900
-  bgGrad.addColorStop(1, "#020617"); // Darkest slate
-  ctx.fillStyle = bgGrad;
+  // 1. Solid White/Light Background for the whole poster
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, width, height);
 
-  // Decorative ambient glow rings
-  const glow1 = ctx.createRadialGradient(width * 0.2, height * 0.15, 50, width * 0.2, height * 0.15, width * 0.6);
-  glow1.addColorStop(0, "rgba(16, 185, 129, 0.25)");
-  glow1.addColorStop(1, "rgba(16, 185, 129, 0)");
-  ctx.fillStyle = glow1;
-  ctx.beginPath();
-  ctx.arc(width * 0.2, height * 0.15, width * 0.6, 0, Math.PI * 2);
-  ctx.fill();
+  // Subtle brand green gradient at the very top
+  const topGrad = ctx.createLinearGradient(0, 0, width, 400);
+  topGrad.addColorStop(0, "#f0fdf4"); // very light green
+  topGrad.addColorStop(1, "#ffffff");
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, width, 400);
 
-  const glow2 = ctx.createRadialGradient(width * 0.8, height * 0.7, 50, width * 0.8, height * 0.7, width * 0.7);
-  glow2.addColorStop(0, "rgba(59, 130, 246, 0.2)");
-  glow2.addColorStop(1, "rgba(59, 130, 246, 0)");
-  ctx.fillStyle = glow2;
-  ctx.beginPath();
-  ctx.arc(width * 0.8, height * 0.7, width * 0.7, 0, Math.PI * 2);
-  ctx.fill();
+  // Load Hero Image if provided
+  let heroImage: HTMLImageElement | null = null;
+  if (opts.aiBackgroundUrl) {
+    try {
+      heroImage = await loadBackgroundImage(opts.aiBackgroundUrl);
+    } catch (err) {
+      console.error("Failed to load hero image", err);
+    }
+  }
 
   // Scale factor based on width
   const scale = width / 1080;
 
   if (format === "story") {
-    renderStoryLayout(ctx, opts, width, height, scale);
+    if (opts.copyType === "b2b") {
+      renderB2BStoryLayout(ctx, opts, width, height, heroImage);
+    } else {
+      renderStoryLayout(ctx, opts, width, height, heroImage);
+    }
   } else if (format === "square") {
-    renderSquareLayout(ctx, opts, width, height, scale);
+    renderSquareLayout(ctx, opts, width, height, heroImage);
   } else {
-    renderFlyerLayout(ctx, opts, width, height, scale);
+    renderFlyerLayout(ctx, opts, width, height, heroImage);
   }
 
   return canvas.toDataURL("image/png");
@@ -92,406 +95,190 @@ function renderStoryLayout(
   opts: PosterOptions,
   width: number,
   height: number,
-  scale: number
+  heroImage: HTMLImageElement | null
 ) {
-  // Header
-  ctx.fillStyle = "#ffffff";
+  // --- 1. HEADER ---
+  ctx.fillStyle = "#064e3b"; // Dark brand green
   ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("LinkChinaMed", 80, 130);
+  ctx.fillText("LinkChinaMed | Your Healthcare Concierge in China", 60, 100);
 
-  ctx.fillStyle = "#34d399";
-  ctx.font = "600 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("CROSS-BORDER HEALTHCARE CONCIERGE", 80, 170);
-
-  ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
-  roundRect(ctx, 740, 95, 260, 55, 28);
-  ctx.fill();
-  ctx.fillStyle = "#f8fafc";
-  ctx.font = "bold 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("Official Partner", 870, 130);
-  ctx.textAlign = "left";
-
-  // Hero Card
-  ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-  roundRect(ctx, 80, 230, 920, 260, 32);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(52, 211, 153, 0.3)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.fillStyle = "#fbbf24";
-  ctx.font = "bold 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText(opts.role === "agent" ? "CREATOR RECRUITMENT PROGRAM" : "PREMIER MEDICAL ACCESS IN CHINA", 120, 290);
-
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "#0f172a";
   ctx.font = "bold 56px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  if (opts.role === "agent") {
-    ctx.fillText("Monetize Medical Travel.", 120, 370);
-    ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillStyle = "#93c5fd";
-    ctx.fillText("Earn 5%–10% Team Commissions", 120, 435);
-  } else {
-    ctx.fillText("World-Class Healthcare.", 120, 370);
-    ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillStyle = "#34d399";
-    ctx.fillText("Zero Waiting List. 70% Less Cost.", 120, 435);
-  }
+  ctx.fillText("WORLD-CLASS HEALTHCARE.", 60, 180);
+  ctx.fillStyle = "#059669";
+  ctx.fillText("ZERO WAITING.", 60, 250);
+  
+  ctx.fillStyle = "#64748b";
+  ctx.font = "600 32px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("Direct Access to China's Premier AAA Hospitals", 60, 310);
 
-  // 4 Pillars
-  const pillars = opts.role === "agent" ? [
-    { icon: "💎", title: "High-Ticket Earnings", desc: "Earn $100–$2,500+ per client booking across your creator network." },
-    { icon: "🔄", title: "Lifetime Attribution", desc: "Permanent client binding with ongoing annual repeat checkup commissions." },
-    { icon: "🎓", title: "Full Creator Toolkit", desc: "Tested pitch scripts, ready-to-use posters & weekly training webinars." },
-    { icon: "🤝", title: "24/7 Care Concierge", desc: "Official medical team handles consultation & hospital logistics for you." },
-  ] : [
-    { icon: "⚡", title: "Zero Waitlist Access", desc: "Fast-track admission to China's Premier AAA International Departments." },
-    { icon: "💰", title: "Save 30%–70% Costs", desc: "Top-tier surgery, oncology & executive checkups at a fraction of Western costs." },
-    { icon: "🌐", title: "1-on-1 Bilingual Escort", desc: "Dedicated medical chaperone from registration to pharmacy guidance." },
-    { icon: "🛡️", title: "100% Transparent Billing", desc: "Hospital treatment fees paid directly to hospital with zero agency markup." },
+  // --- 2. HERO IMAGE ---
+  const imgY = 360;
+  const imgH = 480;
+  ctx.save();
+  roundRect(ctx, 60, imgY, 960, imgH, 24);
+  ctx.clip();
+  if (heroImage) {
+    // cover crop
+    const imgRatio = heroImage.width / heroImage.height;
+    const boxRatio = 960 / imgH;
+    let sWidth = heroImage.width;
+    let sHeight = heroImage.height;
+    let sX = 0;
+    let sY = 0;
+    
+    if (imgRatio > boxRatio) {
+      sWidth = sHeight * boxRatio;
+      sX = (heroImage.width - sWidth) / 2;
+    } else {
+      sHeight = sWidth / boxRatio;
+      sY = (heroImage.height - sHeight) / 2;
+    }
+    ctx.drawImage(heroImage, sX, sY, sWidth, sHeight, 60, imgY, 960, imgH);
+  } else {
+    ctx.fillStyle = "#e2e8f0";
+    ctx.fillRect(60, imgY, 960, imgH);
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "32px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("【 高质感国际医疗大片（摄影实景） 】", width / 2, imgY + imgH / 2);
+    ctx.textAlign = "left";
+  }
+  ctx.restore();
+
+  // --- 3. PILLARS ---
+  const pillarsY = 900;
+  ctx.fillStyle = "#0f172a";
+  ctx.font = "bold 36px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("WHY GLOBAL PATIENTS CHOOSE US:", 60, pillarsY);
+
+  const pillars = [
+    { icon: "⚡", title: "Zero Waitlist:", desc: "Fast-track oncology & surgery admission" },
+    { icon: "💰", title: "30%–70% Savings:", desc: "vs Western private medical costs" },
+    { icon: "🌐", title: "1-on-1 Bilingual Escort:", desc: "Full hospital accompaniment" },
+    { icon: "🛡️", title: "100% Transparent:", desc: "Official hospital billing" },
   ];
 
-  let pillarY = 530;
+  let pY = pillarsY + 70;
   for (const p of pillars) {
-    ctx.fillStyle = "rgba(15, 23, 42, 0.65)";
-    roundRect(ctx, 80, pillarY, 920, 140, 24);
+    ctx.fillStyle = "#f8fafc";
+    roundRect(ctx, 60, pY, 960, 100, 16);
     ctx.fill();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "#e2e8f0";
     ctx.stroke();
 
-    ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
-    roundRect(ctx, 110, pillarY + 25, 90, 90, 20);
-    ctx.fill();
-    ctx.font = "44px -apple-system, BlinkMacSystemFont, sans-serif";
-    ctx.fillText(p.icon, 130, pillarY + 86);
+    ctx.font = "36px sans-serif";
+    ctx.fillText(p.icon, 90, pY + 65);
+    
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    ctx.fillText(p.title, 150, pY + 60);
 
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 32px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillText(p.title, 230, pillarY + 62);
+    ctx.fillStyle = "#475569";
+    ctx.font = "500 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    const titleWidth = ctx.measureText(p.title).width;
+    ctx.fillText(p.desc, 150 + titleWidth + 15, pY + 60);
 
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "500 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillText(p.desc, 230, pillarY + 102);
-
-    pillarY += 165;
+    pY += 120;
   }
 
-  // Footer QR
-  const footerY = 1240;
-  ctx.fillStyle = "#ffffff";
-  roundRect(ctx, 80, footerY, 920, 560, 36);
+  // --- 4. FOOTER ---
+  const footerY = 1420;
+  ctx.fillStyle = "#f0fdf4";
+  roundRect(ctx, 60, footerY, 960, 420, 32);
   ctx.fill();
-  ctx.strokeStyle = "rgba(16, 185, 129, 0.4)";
-  ctx.lineWidth = 3;
-  ctx.stroke();
-
-  ctx.drawImage(opts.qrCanvas, 130, footerY + 70, 420, 420);
-
-  ctx.fillStyle = "#0f172a";
-  ctx.font = "bold 34px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("SCAN TO CONNECT", 590, footerY + 130);
-
-  ctx.fillStyle = "#64748b";
-  ctx.font = "500 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("Scan with phone camera to", 590, footerY + 175);
-  ctx.fillText(opts.role === "agent" ? "join as official KOL partner." : "access top hospital care.", 590, footerY + 205);
-
-  ctx.fillStyle = "#f1f5f9";
-  roundRect(ctx, 590, footerY + 250, 360, 110, 20);
-  ctx.fill();
-  ctx.strokeStyle = "#cbd5e1";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-
-  ctx.fillStyle = "#64748b";
-  ctx.font = "bold 18px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("PARTNER INVITE CODE", 615, footerY + 290);
-
-  ctx.fillStyle = "#059669";
-  ctx.font = "900 42px monospace";
-  ctx.fillText(opts.code, 615, footerY + 338);
-
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "600 18px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("🔒 100% HIPAA & PIPL Compliant", 590, footerY + 410);
-  ctx.fillText("🌐 www.linkchinamed.com", 590, footerY + 440);
-
-  ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-  ctx.font = "18px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("© LinkChinaMed Inc. • Global Cross-Border Medical Care Navigation", width / 2, 1860);
-}
-
-function renderSquareLayout(
-  ctx: CanvasRenderingContext2D,
-  opts: PosterOptions,
-  width: number,
-  height: number,
-  scale: number
-) {
-  // Top Header
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 38px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("LinkChinaMed", 60, 90);
-
-  ctx.fillStyle = "#34d399";
-  ctx.font = "600 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("CROSS-BORDER HEALTHCARE CONCIERGE", 60, 125);
-
-  ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
-  roundRect(ctx, 760, 60, 260, 50, 25);
-  ctx.fill();
-  ctx.fillStyle = "#f8fafc";
-  ctx.font = "bold 18px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("Official Partner", 890, 92);
-  ctx.textAlign = "left";
-
-  // Hero Banner
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  if (opts.role === "agent") {
-    ctx.fillText("Monetize Medical Travel.", 60, 200);
-    ctx.font = "bold 32px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillStyle = "#93c5fd";
-    ctx.fillText("Earn 5%–10% Team Override Commissions", 60, 245);
-  } else {
-    ctx.fillText("World-Class Healthcare in China.", 60, 200);
-    ctx.font = "bold 32px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillStyle = "#34d399";
-    ctx.fillText("Zero Waiting List • 30%–70% Cost Savings", 60, 245);
-  }
-
-  // Left 2 Pillars + Right QR Card
-  const pillars = opts.role === "agent" ? [
-    { icon: "💎", title: "High-Ticket Earnings", desc: "Earn $100–$2,500+ per referral." },
-    { icon: "🔄", title: "Lifetime Attribution", desc: "Permanent client binding & repeat payout." },
-    { icon: "🎓", title: "Full Creator Toolkit", desc: "Tested pitch scripts & weekly webinars." },
-    { icon: "🤝", title: "24/7 Medical Concierge", desc: "Hospital team handles all logistics." },
-  ] : [
-    { icon: "⚡", title: "Zero Waitlist Access", desc: "Direct access to top Grade 3-A specialists." },
-    { icon: "💰", title: "Save 30%–70% Costs", desc: "World-class care at fraction of US/EU price." },
-    { icon: "🌐", title: "1-on-1 Bilingual Escort", desc: "Dedicated chaperone & certified translation." },
-    { icon: "🛡️", title: "100% Direct Billing", desc: "Fees paid to hospital with zero markup." },
-  ];
-
-  let leftY = 300;
-  for (const p of pillars) {
-    ctx.fillStyle = "rgba(15, 23, 42, 0.7)";
-    roundRect(ctx, 60, leftY, 520, 130, 20);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    ctx.font = "32px -apple-system, sans-serif";
-    ctx.fillText(p.icon, 85, leftY + 75);
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillText(p.title, 140, leftY + 52);
-
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "500 18px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillText(p.desc, 140, leftY + 88);
-
-    leftY += 150;
-  }
-
-  // Right QR Box
-  const qrBoxX = 610;
-  const qrBoxY = 300;
-  ctx.fillStyle = "#ffffff";
-  roundRect(ctx, qrBoxX, qrBoxY, 410, 580, 28);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(16, 185, 129, 0.4)";
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
-
-  ctx.drawImage(opts.qrCanvas, qrBoxX + 45, qrBoxY + 40, 320, 320);
-
-  ctx.fillStyle = "#0f172a";
-  ctx.font = "bold 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("SCAN TO CONNECT", qrBoxX + 205, qrBoxY + 395);
-
-  ctx.fillStyle = "#f1f5f9";
-  roundRect(ctx, qrBoxX + 35, qrBoxY + 420, 340, 80, 16);
-  ctx.fill();
-  ctx.strokeStyle = "#cbd5e1";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-
-  ctx.fillStyle = "#64748b";
-  ctx.font = "bold 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("PARTNER CODE", qrBoxX + 205, qrBoxY + 448);
-
-  ctx.fillStyle = "#059669";
-  ctx.font = "900 30px monospace";
-  ctx.fillText(opts.code, qrBoxX + 205, qrBoxY + 484);
-
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "600 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("🔒 HIPAA & PIPL Compliant", qrBoxX + 205, qrBoxY + 540);
-  ctx.textAlign = "left";
-
-  // Footer note
-  ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-  ctx.font = "16px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("© LinkChinaMed Inc. • Global Healthcare Concierge • www.linkchinamed.com", width / 2, 1030);
-}
-
-function renderFlyerLayout(
-  ctx: CanvasRenderingContext2D,
-  opts: PosterOptions,
-  width: number,
-  height: number,
-  scale: number
-) {
-  // Flyer Header
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 48px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("LinkChinaMed", 80, 120);
-
-  ctx.fillStyle = "#34d399";
-  ctx.font = "600 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("GLOBAL CROSS-BORDER HEALTHCARE NAVIGATION", 80, 160);
-
-  ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
-  roundRect(ctx, 840, 85, 280, 60, 30);
-  ctx.fill();
-  ctx.fillStyle = "#f8fafc";
-  ctx.font = "bold 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("Official Partner", 980, 123);
-  ctx.textAlign = "left";
-
-  // Hero Card
-  ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-  roundRect(ctx, 80, 220, 1040, 220, 28);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(52, 211, 153, 0.3)";
+  ctx.strokeStyle = "#bbf7d0";
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  ctx.fillStyle = "#fbbf24";
-  ctx.font = "bold 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText(opts.role === "agent" ? "CREATOR RECRUITMENT PROGRAM" : "PREMIER MEDICAL ACCESS IN CHINA", 120, 275);
-
+  // QR
   ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 52px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  if (opts.role === "agent") {
-    ctx.fillText("Monetize Medical Travel.", 120, 345);
-    ctx.font = "bold 38px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillStyle = "#93c5fd";
-    ctx.fillText("Earn 5%–10% Team Override Commissions", 120, 400);
-  } else {
-    ctx.fillText("World-Class Healthcare.", 120, 345);
-    ctx.font = "bold 38px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillStyle = "#34d399";
-    ctx.fillText("Zero Waiting List • 30%–70% Cost Savings", 120, 400);
-  }
-
-  // 4 Pillars (2x2 Grid)
-  const pillars = opts.role === "agent" ? [
-    { icon: "💎", title: "High-Ticket Earnings", desc: "Earn $100–$2,500+ per referral." },
-    { icon: "🔄", title: "Lifetime Attribution", desc: "Permanent client binding & repeat payout." },
-    { icon: "🎓", title: "Full Creator Toolkit", desc: "Tested pitch scripts & weekly webinars." },
-    { icon: "🤝", title: "24/7 Medical Concierge", desc: "Hospital team handles all logistics." },
-  ] : [
-    { icon: "⚡", title: "Zero Waitlist Access", desc: "Direct access to top Grade 3-A specialists." },
-    { icon: "💰", title: "Save 30%–70% Costs", desc: "World-class care at fraction of US/EU price." },
-    { icon: "🌐", title: "1-on-1 Bilingual Escort", desc: "Dedicated chaperone & certified translation." },
-    { icon: "🛡️", title: "100% Direct Billing", desc: "Fees paid to hospital with zero markup." },
-  ];
-
-  const gridPositions = [
-    { x: 80, y: 480 },
-    { x: 620, y: 480 },
-    { x: 80, y: 650 },
-    { x: 620, y: 650 },
-  ];
-
-  for (let i = 0; i < pillars.length; i++) {
-    const p = pillars[i];
-    const pos = gridPositions[i];
-
-    ctx.fillStyle = "rgba(15, 23, 42, 0.65)";
-    roundRect(ctx, pos.x, pos.y, 500, 140, 20);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    ctx.font = "38px -apple-system, sans-serif";
-    ctx.fillText(p.icon, pos.x + 30, pos.y + 80);
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 26px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillText(p.title, pos.x + 95, pos.y + 60);
-
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "500 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillText(p.desc, pos.x + 95, pos.y + 98);
-  }
-
-  // Footer QR
-  const footerY = 840;
-  ctx.fillStyle = "#ffffff";
-  roundRect(ctx, 80, footerY, 1040, 680, 32);
+  roundRect(ctx, 110, footerY + 60, 300, 300, 20);
   ctx.fill();
-  ctx.strokeStyle = "rgba(16, 185, 129, 0.4)";
-  ctx.lineWidth = 3;
-  ctx.stroke();
+  ctx.drawImage(opts.qrCanvas, 120, footerY + 70, 280, 280);
 
-  ctx.drawImage(opts.qrCanvas, 140, footerY + 90, 500, 500);
-
+  // Text
   ctx.fillStyle = "#0f172a";
-  ctx.font = "bold 38px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("SCAN TO CONNECT", 680, footerY + 160);
+  ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("GET FREE CASE REVIEW", 450, footerY + 120);
+  ctx.fillText("& VIP GUIDE", 450, footerY + 175);
 
-  ctx.fillStyle = "#64748b";
-  ctx.font = "500 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("Scan with phone camera to", 680, footerY + 215);
-  ctx.fillText(opts.role === "agent" ? "join as official partner." : "access premier healthcare.", 680, footerY + 250);
-
-  ctx.fillStyle = "#f1f5f9";
-  roundRect(ctx, 680, footerY + 310, 400, 130, 20);
-  ctx.fill();
-  ctx.strokeStyle = "#cbd5e1";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-
-  ctx.fillStyle = "#64748b";
-  ctx.font = "bold 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("PARTNER INVITE CODE", 710, footerY + 360);
+  ctx.fillStyle = "#475569";
+  ctx.font = "30px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("Scan to chat with our international", 450, footerY + 235);
+  ctx.fillText("medical care team in English", 450, footerY + 275);
 
   ctx.fillStyle = "#059669";
-  ctx.font = "900 48px monospace";
-  ctx.fillText(opts.code, 710, footerY + 415);
+  ctx.font = "bold 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("🔗 www.linkchinamed.com", 450, footerY + 340);
 
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "600 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("🔒 100% HIPAA & PIPL Compliant", 680, footerY + 510);
-  ctx.fillText("🌐 www.linkchinamed.com", 680, footerY + 545);
-
-  // Copyright
-  ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-  ctx.font = "20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("© LinkChinaMed Inc. • Global Medical Travel Concierge", width / 2, 1560);
+  // Code
+  ctx.fillStyle = "#064e3b";
+  ctx.font = "bold 26px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText(`Partner Code: ${opts.code}`, 450, footerY + 380);
 }
 
-function roundRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number
-) {
+function renderSquareLayout(ctx: CanvasRenderingContext2D, opts: PosterOptions, width: number, height: number, heroImage: HTMLImageElement | null) {
+  // Simplified square layout
+  ctx.fillStyle = "#064e3b";
+  ctx.font = "bold 32px -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.fillText("LinkChinaMed | Premier Healthcare", 50, 70);
+
+  ctx.fillStyle = "#0f172a";
+  ctx.font = "bold 46px -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.fillText("WORLD-CLASS CARE. ZERO WAITING.", 50, 135);
+
+  // HERO
+  const imgY = 180;
+  const imgH = 400;
+  ctx.save();
+  roundRect(ctx, 50, imgY, 980, imgH, 20);
+  ctx.clip();
+  if (heroImage) {
+    ctx.drawImage(heroImage, 0, 0, heroImage.width, heroImage.height, 50, imgY, 980, imgH);
+  } else {
+    ctx.fillStyle = "#e2e8f0";
+    ctx.fillRect(50, imgY, 980, imgH);
+  }
+  ctx.restore();
+
+  // QR Block
+  ctx.fillStyle = "#f0fdf4";
+  roundRect(ctx, 50, 620, 980, 400, 24);
+  ctx.fill();
+
+  ctx.fillStyle = "#ffffff";
+  roundRect(ctx, 90, 660, 320, 320, 16);
+  ctx.fill();
+  ctx.drawImage(opts.qrCanvas, 100, 670, 300, 300);
+
+  ctx.fillStyle = "#0f172a";
+  ctx.font = "bold 42px -apple-system, sans-serif";
+  ctx.fillText("GET FREE CASE REVIEW", 450, 730);
+
+  ctx.fillStyle = "#475569";
+  ctx.font = "28px sans-serif";
+  ctx.fillText("Scan to chat with our medical team", 450, 790);
+  ctx.fillText("1-on-1 Bilingual Escort • 70% Less Cost", 450, 840);
+
+  ctx.fillStyle = "#059669";
+  ctx.font = "bold 32px monospace";
+  ctx.fillText(`CODE: ${opts.code}`, 450, 910);
+  
+  ctx.fillStyle = "#047857";
+  ctx.font = "24px sans-serif";
+  ctx.fillText("🔗 www.linkchinamed.com", 450, 955);
+}
+
+function renderFlyerLayout(ctx: CanvasRenderingContext2D, opts: PosterOptions, width: number, height: number, heroImage: HTMLImageElement | null) {
+  // TBD - same logic as story but adapted for 3:4.
+  // Just reuse story with slightly different spacing for now.
+  ctx.scale(width/1080, height/1920);
+  renderStoryLayout(ctx, opts, 1080, 1920, heroImage);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   if (w < 2 * r) r = w / 2;
   if (h < 2 * r) r = h / 2;
   ctx.beginPath();
@@ -501,4 +288,108 @@ function roundRect(
   ctx.arcTo(x, y + h, x, y, r);
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
+}
+
+function loadBackgroundImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+function renderB2BStoryLayout(
+  ctx: CanvasRenderingContext2D,
+  opts: PosterOptions,
+  width: number,
+  height: number,
+  heroImage: HTMLImageElement | null
+) {
+  // Dark Green Background for B2B
+  ctx.fillStyle = "#064e3b";
+  ctx.fillRect(0, 0, width, height);
+
+  // Subtle gradient at bottom
+  const botGrad = ctx.createLinearGradient(0, height - 600, 0, height);
+  botGrad.addColorStop(0, "#064e3b");
+  botGrad.addColorStop(1, "#022c22");
+  ctx.fillStyle = botGrad;
+  ctx.fillRect(0, height - 600, width, 600);
+
+  // --- 1. HEADER ---
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("LinkChinaMed | Official Partner", 60, 100);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 56px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("Monetize Medical Travel.", 60, 180);
+  ctx.fillStyle = "#34d399";
+  ctx.fillText("Earn 5%-10% Team Override Commissions", 60, 250);
+
+  // --- 2. PILLARS (B2B variant) ---
+  const pillarsY = 360;
+  const pillars = [
+    { icon: "💎", title: "High-Ticket Earnings", desc: "Earn $100–$2,500+ per referral." },
+    { icon: "🔄", title: "Lifetime Attribution", desc: "Permanent client binding & repeat payout." },
+    { icon: "🎓", title: "Full Creator Toolkit", desc: "Tested pitch scripts & weekly webinars." },
+    { icon: "🤝", title: "24/7 Medical Concierge", desc: "Hospital team handles all logistics." },
+  ];
+
+  let pY = pillarsY;
+  for (const p of pillars) {
+    ctx.fillStyle = "#0f172a";
+    roundRect(ctx, 60, pY, 960, 120, 20);
+    ctx.fill();
+
+    ctx.font = "40px sans-serif";
+    ctx.fillText(p.icon, 100, pY + 75);
+    
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 32px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    ctx.fillText(p.title, 170, pY + 55);
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "500 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    ctx.fillText(p.desc, 170, pY + 95);
+
+    pY += 150;
+  }
+
+  // --- 3. FOOTER (QR CODE) ---
+  const footerY = 1000;
+  ctx.fillStyle = "#ffffff";
+  roundRect(ctx, 60, footerY, 960, 800, 32);
+  ctx.fill();
+
+  // QR
+  roundRect(ctx, (width - 400) / 2, footerY + 80, 400, 400, 20);
+  ctx.fill();
+  ctx.drawImage(opts.qrCanvas, (width - 360) / 2, footerY + 100, 360, 360);
+
+  // Text
+  ctx.fillStyle = "#0f172a";
+  ctx.textAlign = "center";
+  ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("SCAN TO CONNECT", width / 2, footerY + 550);
+
+  // Code box
+  ctx.fillStyle = "#f8fafc";
+  roundRect(ctx, 240, footerY + 600, 600, 120, 24);
+  ctx.fill();
+  ctx.strokeStyle = "#e2e8f0";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.fillStyle = "#64748b";
+  ctx.font = "bold 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("PARTNER CODE", width / 2, footerY + 645);
+  
+  ctx.fillStyle = "#059669";
+  ctx.font = "bold 48px monospace";
+  ctx.fillText(opts.code, width / 2, footerY + 695);
+  
+  ctx.textAlign = "left";
 }
