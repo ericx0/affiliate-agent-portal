@@ -43,9 +43,18 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getUser() throws on malformed/expired cookies (e.g. session JSON
+  // whose embedded JWT signature no longer verifies post-key-rotation,
+  // or cookies from a prior deploy that changed the cookie name).
+  // Treat any auth error as "no user" so stale state in the browser
+  // doesn't bring the whole middleware down with MIDDLEWARE_INVOCATION_FAILED.
+  let user: { id: string } | null = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    user = null;
+  }
 
   const { pathname } = request.nextUrl;
   if (PROTECTED.test(pathname) && !user) {
