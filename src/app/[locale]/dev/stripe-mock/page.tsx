@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/api";
 
 function safeInternalPath(raw: string | null): string {
   const fallback = "/dashboard/settings/stripe";
@@ -21,11 +21,12 @@ function StripeMockInner() {
   async function handleComplete() {
     setLoading(true);
     try {
-      await fetch("/api/affiliate/me/stripe-complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accountId: account }),
-      });
+      // P0-S1.1b: route now proxies to affiliate-service via Next.js
+      // rewrite. Service-side controller reads stripe_account_id from
+      // DB (ignores body) — no accountId needed in body. apiFetch
+      // auto-attaches the session JWT so kolOrAgentAuthMiddleware
+      // can authenticate.
+      await apiFetch("/api/affiliate/me/stripe-complete", { method: "POST" });
     } catch (e) {
       console.warn("Mock update warning:", e);
     }
