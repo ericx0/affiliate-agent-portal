@@ -65,6 +65,7 @@ export default function AgentDashboard() {
           if (userEmail) {
             const { data: list } = await supabase.rpc("affiliate_list_promoters", {
               p_search: userEmail,
+              p_role: "agent",
             });
             if (Array.isArray(list)) {
               promoterData = list.find((p: any) => p.email?.toLowerCase() === userEmail);

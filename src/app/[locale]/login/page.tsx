@@ -7,6 +7,7 @@ import { useRouter, Link } from "@/navigation";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 import TurnstileLoader from "@/components/TurnstileLoader";
 import { supabase } from "@/lib/supabase";
+import { findAgentMatch } from "@/lib/auth-guards";
 
 const TURNSTILE_SITE_KEY =
   process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ||
@@ -133,22 +134,15 @@ export default function AgentLoginPage() {
         return;
       }
 
-      const match = Array.isArray(data)
-        ? data.find((p: any) => p.email?.toLowerCase() === normalizedEmail)
-        : null;
+      const match = findAgentMatch(data, normalizedEmail);
 
-      if (!match || match.status !== "active") {
-        setError(t("notRegisteredAgent"));
-        return;
-      }
-
-      if (match.role === "kol") {
-        setError(t("registeredAsKol"));
-        return;
-      }
-
-      if (match.role !== "agent") {
-        setError(t("notRegisteredAgent"));
+      if (!match) {
+        // Distinguish KOL from everything-else for the user-facing message;
+        // the server only reveals that this email is NOT an agent.
+        const candidate = Array.isArray(data)
+          ? data.find((p: any) => p.email?.toLowerCase() === normalizedEmail)
+          : null;
+        setError(candidate?.role === "kol" ? t("registeredAsKol") : t("notRegisteredAgent"));
         return;
       }
     } catch {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { deriveLocaleFromRequest } from "@/lib/auth-guards";
 
 export async function POST(req: NextRequest) {
   try {
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
 
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     const isLive = stripeKey && !stripeKey.startsWith("PLACEHOLDER") && !stripeKey.includes("placeholder");
+    const locale = deriveLocaleFromRequest(req);
 
     if (!isLive) {
       // Dev / Mock test mode
@@ -97,8 +99,8 @@ export async function POST(req: NextRequest) {
     const origin = req.nextUrl.origin || "https://agent.linkchinamed.com";
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${origin}/zh/dashboard/settings/stripe`,
-      return_url: `${origin}/zh/dashboard/settings/stripe?status=success`,
+      refresh_url: `${origin}/${locale}/dashboard/settings/stripe`,
+      return_url: `${origin}/${locale}/dashboard/settings/stripe?status=success`,
       type: "account_onboarding",
     });
 

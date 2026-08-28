@@ -13,18 +13,62 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const t = useTranslations("nav");
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [denied, setDenied] = useState(false);
 
+  // AAP-P0-1: hard role gate. KOL / admin / customer / unauthenticated
+  // users are blocked from every (protected)/* route. The previous
+  // version only checked getUser() so anyone with a Supabase session
+  // could browse /dashboard, /kols, /commissions and hit the
+  // agent-only RPCs that mutate KOL state.
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (cancelled) return;
       if (!data.user) {
         router.push("/login");
-      } else {
-        setLoading(false);
+        return;
       }
-    });
+      const email = data.user.email?.trim().toLowerCase();
+      if (!email) {
+        await supabase.auth.signOut();
+        router.push("/login");
+        return;
+      }
+      const { data: list } = await supabase.rpc("affiliate_list_promoters", {
+        p_search: email,
+        p_role: "agent",
+      });
+      const match = Array.isArray(list)
+        ? (list as any[]).find((p) => p.email?.toLowerCase() === email)
+        : null;
+      if (!match || match.role !== "agent" || match.status !== "active") {
+        setDenied(true);
+        await supabase.auth.signOut();
+        router.push("/login?error=not_agent");
+        return;
+      }
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
-  if (loading) return <div className="p-8">{t("loading")}</div>;
+  if (loading)
+    return (
+      <div className="p-8" aria-busy="true">
+        {t("loading")}
+      </div>
+    );
+
+  if (denied) {
+    return (
+      <div className="p-8 text-center text-slate-500">
+        <p className="text-sm">Access denied: agent role required.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
