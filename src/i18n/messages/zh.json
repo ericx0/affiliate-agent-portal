@@ -911,8 +911,11 @@
     "earnings": "佣金",
     "payouts": "提现",
     "settings": "设置",
-    "kols": "KOL",
+    "kols": "KOL团队",
     "commissions": "佣金明细",
+    "posters": "海报中心",
+    "prospecting": "全球拓客",
+    "resources": "医疗资源与话术",
     "playbook": "文档中心",
     "account": "账户"
   },

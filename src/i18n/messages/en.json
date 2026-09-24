@@ -913,6 +913,9 @@
     "settings": "Settings",
     "kols": "KOLs",
     "commissions": "Commissions",
+    "posters": "Posters",
+    "prospecting": "Prospecting",
+    "resources": "Hospitals & Scripts",
     "playbook": "Playbook & Docs",
     "account": "Account"
   },

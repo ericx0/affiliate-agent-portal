@@ -23,9 +23,15 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await supabase.auth.getUser();
+      const mockUser =
+        process.env.NODE_ENV !== "production" && typeof window !== "undefined"
+          ? (window as any).__E2E_MOCK_USER__
+          : null;
+      const { data } = mockUser
+        ? { data: { user: mockUser } }
+        : await supabase.auth.getUser();
       if (cancelled) return;
-      if (!data.user) {
+      if (!data?.user) {
         router.push("/login");
         return;
       }
@@ -72,26 +78,27 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen">
-      <nav className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex gap-6 items-center">
-            <Link href="/dashboard" className="font-bold">{t("agentPortalTitle")}</Link>
-            <Link href="/kols">{t("kols")}</Link>
-            <Link href="/commissions">{t("commissions")}</Link>
-            <Link href="/playbook" className="inline-flex items-center gap-1.5 text-emerald-600 font-semibold hover:text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg transition-colors">
-              <BookOpen className="w-4 h-4 text-emerald-600" />
-              {t("playbook")}
+      <nav className="bg-white border-b sticky top-0 z-40 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex gap-4 sm:gap-6 items-center overflow-x-auto text-xs sm:text-sm py-2">
+            <Link href="/dashboard" className="font-extrabold text-slate-900 whitespace-nowrap">{t("agentPortalTitle")}</Link>
+            <Link href="/kols" className="text-slate-600 hover:text-slate-900 font-medium whitespace-nowrap">{t("kols")}</Link>
+            <Link href="/marketing/posters" className="text-slate-600 hover:text-slate-900 font-medium whitespace-nowrap">{t("posters")}</Link>
+            <Link href="/prospecting" className="text-slate-600 hover:text-slate-900 font-medium whitespace-nowrap">{t("prospecting")}</Link>
+            <Link href="/resources" className="inline-flex items-center gap-1.5 text-emerald-700 font-semibold hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1 rounded-lg transition-colors whitespace-nowrap border border-emerald-200">
+              <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+              {t("resources")}
             </Link>
-            <Link href="/marketing/posters" className="text-emerald-600 font-medium hover:text-emerald-700">海报图库</Link>
-            <Link href="/dashboard/settings/stripe">{t("settings")}</Link>
-            <Link href="/account">{t("account")}</Link>
+            <Link href="/commissions" className="text-slate-600 hover:text-slate-900 font-medium whitespace-nowrap">{t("commissions")}</Link>
+            <Link href="/dashboard/settings/stripe" className="text-slate-600 hover:text-slate-900 font-medium whitespace-nowrap">{t("settings")}</Link>
+            <Link href="/account" className="text-slate-600 hover:text-slate-900 font-medium whitespace-nowrap">{t("account")}</Link>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-shrink-0 ml-4">
             <NotificationBell />
             <LocaleSwitcher />
             <button
               onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}
-              className="text-sm text-slate-500"
+              className="text-xs sm:text-sm text-slate-500 hover:text-slate-800 whitespace-nowrap"
             >
               {t("logout")}
             </button>

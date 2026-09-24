@@ -13,6 +13,10 @@ import {
   QrCode,
   Check,
   Copy,
+  Sparkles,
+  ArrowRight,
+  Compass,
+  BookOpen,
 } from "lucide-react";
 
 const TIER_RATE_BY_LEVEL: Record<number, { nextRate: number | null; minKols: number }> = {
@@ -274,6 +278,66 @@ export default function AgentDashboard() {
               )}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Global Creator & Patient Growth Enablement Hub */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950 p-6 sm:p-7 rounded-3xl text-white shadow-lg space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold mb-2">
+              <Sparkles className="w-3.5 h-3.5" />
+              Global Creator & Healthcare Growth Toolkit
+            </div>
+            <h3 className="text-lg font-bold text-white">全球拓客与赋能中心 (Growth & Enablement Hub)</h3>
+            <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+              为您的代理团队配备顶级拓展工具：现阶段重点突破疾病矩阵、全网精准找人搜索词库、带参二维码海报生成、以及中国 63 家顶尖公立三甲名院直联多语话术。
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+          <Link
+            href="/marketing/posters"
+            className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 transition-all flex flex-col justify-between group"
+          >
+            <div>
+              <div className="flex items-center justify-between text-emerald-400 mb-2">
+                <QrCode className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+              </div>
+              <div className="font-bold text-sm text-white">专属二维码海报中心</div>
+              <p className="text-xs text-slate-300 mt-1">4 套官方高保真海报，动态嵌入个人带参二维码，支持 9:16/1:1/3:4 极速导出</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/prospecting"
+            className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 transition-all flex flex-col justify-between group"
+          >
+            <div>
+              <div className="flex items-center justify-between text-blue-400 mb-2">
+                <Compass className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+              </div>
+              <div className="font-bold text-sm text-white">全球拓客作战地图</div>
+              <p className="text-xs text-slate-300 mt-1">现阶段重点疾病 (CAR-T/阜外/脑科/二诊)、全网搜索词库、平台内容结构与邮箱挖掘实战</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/resources"
+            className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 transition-all flex flex-col justify-between group"
+          >
+            <div>
+              <div className="flex items-center justify-between text-amber-400 mb-2">
+                <BookOpen className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-400 group-hover:translate-x-1 transition-all" />
+              </div>
+              <div className="font-bold text-sm text-white">医疗资源与话术知识库</div>
+              <p className="text-xs text-slate-300 mt-1">6 大方向 53 专科名院速查、专科直联多语话术、8 大杀手级异议抗辩宝典与合规红线</p>
+            </div>
+          </Link>
         </div>
       </div>
 
