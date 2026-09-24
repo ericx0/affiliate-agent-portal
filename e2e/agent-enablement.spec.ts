@@ -86,7 +86,7 @@ async function mockAgentAuthSession(page: Page) {
     });
   });
 
-  // Mock stats API
+  // Mock stats API (6-card dashboard: 6 existing + 3 new team-aggregate fields)
   await page.route("**/api/affiliate/agent/stats**", async (route) => {
     await route.fulfill({
       status: 200,
@@ -98,6 +98,24 @@ async function mockAgentAuthSession(page: Page) {
         totalPending: 120000,
         totalApproved: 80000,
         agentRate: 10,
+        teamOrdersInProgress: 5,
+        teamOrdersCompleted: 7,
+        teamGmvClosed: 1234000, // $12,340 cents
+      }),
+    });
+  });
+
+  // Mock stripe-status (Card 6 of dashboard)
+  await page.route("**/api/affiliate/me/stripe-status**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        data: {
+          connected: true,
+          accountId: "acct_test_123",
+          payoutsEnabled: true,
+        },
       }),
     });
   });
@@ -218,10 +236,38 @@ test.describe("Agent Enablement & Toolkit E2E Journey", () => {
     await expect(page.locator("text=严禁非医务人员擅自诊断或处方")).toBeVisible();
   });
 
-  test("Dashboard: renders Growth Toolkit and navigates correctly", async ({ page }) => {
+  test("Dashboard: renders 6 overview cards + Growth Toolkit and navigates correctly", async ({ page }) => {
     await page.goto("/zh/dashboard");
 
-    // Check Enablement Hub Card
+    // Card 1: My Tier (Bronze/Silver/Gold label + 5/8/10% rate)
+    await expect(page.locator("text=当前等级").first()).toBeVisible();
+    await expect(page.locator("text=金牌代理")).toBeVisible();
+    await expect(page.locator("text=10%").first()).toBeVisible();
+
+    // Card 2: My Team (12 total + 8 active)
+    await expect(page.locator("text=我的团队")).toBeVisible();
+    await expect(page.locator("text=12 人").first()).toBeVisible();
+    await expect(page.locator("text=8 人").first()).toBeVisible();
+
+    // Card 3: Team Orders (In Progress 5 + Completed 7)
+    await expect(page.locator("text=团队订单状态")).toBeVisible();
+    await expect(page.locator("text=进行中").first()).toBeVisible();
+    await expect(page.locator("text=已结束").first()).toBeVisible();
+
+    // Card 4: Team GMV Closed ($12,340)
+    await expect(page.locator("text=团队成交")).toBeVisible();
+    await expect(page.locator("text=$12,340").first()).toBeVisible();
+
+    // Card 5: My Commission (Received + Pending)
+    await expect(page.locator("text=我的佣金")).toBeVisible();
+    await expect(page.locator("text=已入账").first()).toBeVisible();
+    await expect(page.locator("text=待入账").first()).toBeVisible();
+
+    // Card 6: Stripe KYC (Connected)
+    await expect(page.locator("text=Stripe 提现").first()).toBeVisible();
+    await expect(page.locator("text=已认证 · 可提现")).toBeVisible();
+
+    // Enablement Hub
     await expect(page.locator("text=全球拓客与赋能中心 (Growth & Enablement Hub)")).toBeVisible();
     await expect(page.locator("text=专属二维码海报中心")).toBeVisible();
     await expect(page.locator("text=全球拓客作战地图")).toBeVisible();

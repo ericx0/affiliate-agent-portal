@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
@@ -8,7 +8,6 @@ import { Link } from "@/navigation";
 import {
   Users,
   Award,
-  TrendingUp,
   Wallet,
   QrCode,
   Check,
@@ -17,6 +16,10 @@ import {
   ArrowRight,
   Compass,
   BookOpen,
+  Activity,
+  DollarSign,
+  CreditCard,
+  TrendingUp,
 } from "lucide-react";
 
 const TIER_RATE_BY_LEVEL: Record<number, { nextRate: number | null; minKols: number }> = {
@@ -32,6 +35,10 @@ interface AgentStats {
   totalPending: number;
   totalApproved: number;
   agentRate: number;
+  // 6-card dashboard: team-aggregate order stats (admin-only detail in Lark)
+  teamOrdersInProgress: number;
+  teamOrdersCompleted: number;
+  teamGmvClosed: number;
 }
 
 interface InviteCodeResponse {
@@ -46,6 +53,12 @@ interface TeamKol {
   total_commission_earned: number;
 }
 
+interface StripeStatus {
+  connected: boolean;
+  accountId: string | null;
+  payoutsEnabled: boolean;
+}
+
 const TOP_KOL_LIMIT = 20;
 
 export default function AgentDashboard() {
@@ -56,6 +69,7 @@ export default function AgentDashboard() {
   const [invite, setInvite] = useState<InviteCodeResponse | null>(null);
   const [copied, setCopied] = useState(false);
   const [topKols, setTopKols] = useState<TeamKol[]>([]);
+  const [stripe, setStripe] = useState<StripeStatus | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -90,6 +104,9 @@ export default function AgentDashboard() {
             totalPending: 0,
             totalApproved: 0,
             agentRate: realRate,
+            teamOrdersInProgress: 0,
+            teamOrdersCompleted: 0,
+            teamGmvClosed: 0,
           };
           if (realRate !== 5 && currentStats.agentRate === 5) {
             currentStats.agentRate = realRate;
@@ -123,6 +140,13 @@ export default function AgentDashboard() {
             .sort((a, b) => (b.gmv_total || 0) - (a.gmv_total || 0))
             .slice(0, TOP_KOL_LIMIT);
           setTopKols(sorted);
+
+          // Stripe KYC status (separate endpoint - already exists, mirrors
+          // stripe settings page so this card can show real-time state).
+          const stripeRes = await apiFetch<{ data: StripeStatus }>(
+            "/api/affiliate/me/stripe-status"
+          ).catch(() => null);
+          if (stripeRes?.data) setStripe(stripeRes.data);
         } catch (e) {
           console.warn("Direct RPC agent lookup error:", e);
         }
@@ -171,74 +195,171 @@ export default function AgentDashboard() {
         <p className="text-sm text-slate-500 mt-1">{t("dashboardSubtitle")}</p>
       </div>
 
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-xs font-semibold backdrop-blur-md">
-            <Award className="w-4 h-4 text-amber-300" />
-            {t("tierBadge")}
+      {/* 6-card agent overview.
+          Layout: 1 col mobile / 2 col sm / 3 col lg.
+          Cards 3+4 (team orders / team GMV) are aggregate only — admin
+          sees per-order detail in Lark; this portal intentionally does not
+          expose customer/order detail to KOL recruiters. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* Card 1: My Tier */}
+        <div className="bg-gradient-to-br from-amber-50 via-white to-amber-50 p-6 rounded-2xl border border-amber-100 shadow-sm space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700">
+              <Award className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-amber-700 uppercase tracking-wider">{t("tierBadge")}</div>
+              <div className="text-lg font-bold text-slate-900 mt-0.5">{tierName}</div>
+            </div>
           </div>
-          <div className="text-3xl font-extrabold flex items-center gap-3">
-            {tierName}
-            <span className="text-xl bg-amber-400 text-slate-900 px-3 py-1 rounded-xl font-black">
-              {tierRate} {t("commission")}
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-amber-700">{tierRate}</span>
+            <span className="text-xs text-slate-500 font-semibold">{t("commission")}</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-[11px] font-bold text-slate-500">
+              <span>{t("recruitmentProgress")}</span>
+              <span>{t("progressCount", { count: kolCount })}</span>
+            </div>
+            <div className="w-full bg-amber-100 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-amber-500 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(progressPercent, 100)}%` }}
+              ></div>
+            </div>
+            <p className="text-[11px] text-slate-500 pt-0.5">{nextGoal}</p>
+          </div>
+        </div>
+
+        {/* Card 2: My Team */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t("teamCardTitle")}</div>
+              <div className="text-lg font-bold text-slate-900 mt-0.5">
+                {stats?.totalKols ?? 0} <span className="text-xs text-slate-500 font-medium">{t("personUnit")}</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded-lg font-semibold">
+              <TrendingUp className="w-3 h-3" />
+              {stats?.activeKols ?? 0} {t("personUnit")} {t("statusActive")}
             </span>
           </div>
-          <p className="text-xs text-blue-100">{nextGoal}</p>
+          <Link
+            href="/kols"
+            className="text-xs text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1"
+          >
+            {tDash("topKols")} <ArrowRight className="w-3 h-3" />
+          </Link>
         </div>
-        <div className="w-full md:w-64 space-y-2 bg-white/10 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
-          <div className="flex justify-between text-xs font-bold text-blue-200">
-            <span>{t("recruitmentProgress")}</span>
-            <span>{t("progressCount", { count: kolCount })}</span>
-          </div>
-          <div className="w-full bg-blue-950/60 rounded-full h-3 overflow-hidden">
-            <div
-              className="bg-amber-400 h-3 rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(progressPercent, 100)}%` }}
-            ></div>
-          </div>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
-            <Users className="w-6 h-6" />
+        {/* Card 3: Team Orders (In Progress / Completed) */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+              <Activity className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t("teamOrdersTitle")}</div>
+              <div className="text-lg font-bold text-slate-900 mt-0.5">
+                {stats ? stats.teamOrdersInProgress + stats.teamOrdersCompleted : 0}
+              </div>
+            </div>
           </div>
-          <div>
-            <div className="text-xs text-slate-400 font-bold">{t("statTotalKols")}</div>
-            <div className="text-2xl font-bold text-slate-900 mt-1">{stats?.totalKols} {t("personUnit")}</div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-amber-50 px-3 py-2 rounded-lg">
+              <div className="text-[10px] font-bold text-amber-700 uppercase">{t("teamOrdersInProgressLabel")}</div>
+              <div className="text-xl font-extrabold text-amber-800 mt-0.5">
+                {stats?.teamOrdersInProgress ?? 0}
+              </div>
+            </div>
+            <div className="bg-emerald-50 px-3 py-2 rounded-lg">
+              <div className="text-[10px] font-bold text-emerald-700 uppercase">{t("teamOrdersCompletedLabel")}</div>
+              <div className="text-xl font-extrabold text-emerald-800 mt-0.5">
+                {stats?.teamOrdersCompleted ?? 0}
+              </div>
+            </div>
           </div>
+          <p className="text-[11px] text-slate-400">Aggregated only — order details live in Lark.</p>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-            <TrendingUp className="w-6 h-6" />
+
+        {/* Card 4: Team GMV Closed */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+              <DollarSign className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t("teamGmvTitle")}</div>
+              <div className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                ${((stats?.teamGmvClosed ?? 0) / 100).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+              </div>
+            </div>
           </div>
-          <div>
-            <div className="text-xs text-slate-400 font-bold">{t("statActiveKols")}</div>
-            <div className="text-2xl font-bold text-slate-900 mt-1">{stats?.activeKols} {t("personUnit")}</div>
-          </div>
+          <p className="text-[11px] text-slate-500">USD · cumulative across {t("teamOrdersCompletedLabel")} orders</p>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-            <Wallet className="w-6 h-6" />
+
+        {/* Card 5: My Commission */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
+              <Wallet className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t("myCommissionTitle")}</div>
+              <div className="text-lg font-bold text-slate-900 mt-0.5">
+                ${(((stats?.totalPaid ?? 0) + (stats?.totalApproved ?? 0)) / 100).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+              </div>
+            </div>
           </div>
-          <div>
-            <div className="text-xs text-slate-400 font-bold">{t("statTotalPaid")}</div>
-            <div className="text-2xl font-bold text-slate-900 mt-1">
-              ${((stats?.totalPaid ?? 0) / 100).toFixed(2)}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-emerald-50 px-3 py-2 rounded-lg">
+              <div className="text-[10px] font-bold text-emerald-700 uppercase">{t("commissionReceivedLabel")}</div>
+              <div className="text-sm font-bold text-emerald-800 mt-0.5">
+                ${((stats?.totalPaid ?? 0) / 100).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+              </div>
+            </div>
+            <div className="bg-amber-50 px-3 py-2 rounded-lg">
+              <div className="text-[10px] font-bold text-amber-700 uppercase">{t("commissionPendingLabel")}</div>
+              <div className="text-sm font-bold text-amber-800 mt-0.5">
+                ${((stats?.totalPending ?? 0) / 100).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+              </div>
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
-            <Award className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="text-xs text-slate-400 font-bold">{t("statPendingCommission")}</div>
-            <div className="text-2xl font-bold text-slate-900 mt-1">
-              ${((stats?.totalPending ?? 0) / 100).toFixed(2)}
+
+        {/* Card 6: Stripe KYC / Payouts */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t("stripeKycTitle")}</div>
+              <div className="text-base font-bold mt-0.5">
+                {!stripe ? (
+                  <span className="text-slate-400">—</span>
+                ) : stripe.connected && stripe.payoutsEnabled ? (
+                  <span className="text-emerald-600">{t("stripeKycConnected")}</span>
+                ) : stripe.connected ? (
+                  <span className="text-amber-600">{t("stripeKycPending")}</span>
+                ) : (
+                  <span className="text-slate-500">{t("stripeKycNotConnected")}</span>
+                )}
+              </div>
             </div>
           </div>
+          <Link
+            href="/dashboard/settings/stripe"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+          >
+            {t("ctaCompleteStripe")} <ArrowRight className="w-3 h-3" />
+          </Link>
         </div>
       </div>
 
