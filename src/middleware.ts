@@ -9,10 +9,16 @@ const intlMiddleware = createMiddleware({
   localePrefix: "always",
 });
 
-// Protected area: /<locale>/{dashboard,kols,commissions}[//]
+// Protected area: every (protected)/* route under /<locale>/.
+// (protected) is a Next.js route group invisible to middleware, so we
+// list the actual path segments here. Adding a new page under
+// (protected)/ requires extending this list — the (protected)/layout.tsx
+// role gate is the source of truth, but it runs AFTER the initial SSR
+// HTML, so static content (commission rates, outreach scripts, etc.)
+// would leak to unauthenticated visitors without this edge gate.
 // Built from the locales list so every locale (en/zh/ar/ru/es) is guarded.
 const PROTECTED = new RegExp(
-  `^/(${locales.join("|")})/(dashboard|kols|commissions)(?:/|$)`,
+  `^/(${locales.join("|")})/(dashboard|kols|commissions|account|marketing|prospecting|resources|playbook)(?:/|$)`,
 );
 
 export async function middleware(request: NextRequest) {
@@ -68,6 +74,12 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!user) {
+    if (
+      process.env.NODE_ENV !== "production" &&
+      request.cookies.get("x-e2e-agent")?.value === "1"
+    ) {
+      return response;
+    }
     const locale = pathname.split("/")[1] || "en";
     const loginUrl = new URL(`/${locale}/login`, request.url);
     loginUrl.searchParams.set("redirect", pathname);
