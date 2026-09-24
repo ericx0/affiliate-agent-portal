@@ -1,48 +1,144 @@
 /**
  * Multi-Format High-Definition Canvas Poster Generator for LinkChinaMed
  * Supports 9:16 Story, 1:1 Square Feed, and 3:4 High-Res Flyer formats.
+ * 100% Client-Side Pure Canvas Rendering with Embedded Dynamic QR Code.
  */
 
 export type PosterFormat = "story" | "square" | "flyer";
 
-export type CopyType = "b2c" | "b2b";
+export type PosterThemeId =
+  | "b2b_partner"
+  | "premier_hospitals"
+  | "cutting_edge_oncology"
+  | "second_opinion";
+
+export interface PosterTheme {
+  id: PosterThemeId;
+  name: string;
+  tag: string;
+  headline: string;
+  subheadline: string;
+  accentColor: string;
+  pillars: Array<{ icon: string; title: string; desc: string }>;
+  ctaTitle: string;
+  ctaSubtitle: string;
+  bgGradStart: string;
+  bgGradEnd: string;
+}
+
+export const POSTER_THEMES: Record<PosterThemeId, PosterTheme> = {
+  b2b_partner: {
+    id: "b2b_partner",
+    name: "Global Healthcare Creator Partner",
+    tag: "B2B CREATOR RECRUITMENT",
+    headline: "MONETIZE GLOBAL HEALTHCARE",
+    subheadline: "Earn 5%–10% Team Override Commissions with Zero Medical Experience Needed",
+    accentColor: "#059669",
+    bgGradStart: "#064e3b",
+    bgGradEnd: "#022c22",
+    pillars: [
+      { icon: "💎", title: "High-Ticket Payouts:", desc: "Earn $100–$2,500+ per client referral" },
+      { icon: "🔄", title: "Permanent Attribution:", desc: "Lifetime client binding & automatic Stripe payouts" },
+      { icon: "🎓", title: "Full Sales Enablement:", desc: "Tested pitch scripts, hospital dossiers & webinars" },
+      { icon: "🛡️", title: "Zero Clinical Liability:", desc: "Hospital handles all medical care; 100% transparent" },
+    ],
+    ctaTitle: "BECOME AN OFFICIAL PARTNER",
+    ctaSubtitle: "Scan QR code to activate your partner portal",
+  },
+  premier_hospitals: {
+    id: "premier_hospitals",
+    name: "Direct Access to Premier AAA Hospitals",
+    tag: "GLOBAL PATIENT VIP CONCIERGE",
+    headline: "WORLD-CLASS HEALTHCARE. ZERO WAITING.",
+    subheadline: "Direct Fast-Track Admission to China's Top Public AAA Hospital International Wings",
+    accentColor: "#0284c7",
+    bgGradStart: "#0c4a6e",
+    bgGradEnd: "#082f49",
+    pillars: [
+      { icon: "⚡", title: "Zero Waitlists:", desc: "Consult top specialists & schedule surgery in days" },
+      { icon: "💰", title: "30%–70% Savings:", desc: "Fraction of US/EU private medical procedure costs" },
+      { icon: "🌐", title: "1-on-1 Bilingual Escort:", desc: "Full accompaniment, medical translation & logistics" },
+      { icon: "🏥", title: "National Medical Centers:", desc: "Peking Union, Fuwai Cardiovascular & CAMS Cancer" },
+    ],
+    ctaTitle: "GET FREE CASE EVALUATION",
+    ctaSubtitle: "Scan to connect with our international care team",
+  },
+  cutting_edge_oncology: {
+    id: "cutting_edge_oncology",
+    name: "Next-Gen CAR-T & Precision Oncology",
+    tag: "BREAKTHROUGH CANCER THERAPIES",
+    headline: "ADVANCED CELL THERAPY & BISPECIFICS",
+    subheadline: "China-Approved BCMA CAR-T & Dual Antibodies at 1/4 Western Treatment Costs",
+    accentColor: "#10b981",
+    bgGradStart: "#042f2e",
+    bgGradEnd: "#021d1b",
+    pillars: [
+      { icon: "🔬", title: "Next-Gen CAR-T:", desc: "BCMA & CD19 therapy with fast 2-week cell turnaround" },
+      { icon: "💊", title: "World-First Bispecifics:", desc: "Ivonescimab (PD-1/VEGF-A) & Cadonilimab" },
+      { icon: "🎯", title: "Proton & Heavy Ion:", desc: "Sub-millimeter beam targeting complex tumors" },
+      { icon: "💵", title: "Radical Affordability:", desc: "$80k–$120k comprehensive vs $450k+ in the US" },
+    ],
+    ctaTitle: "EXPLORE CUTTING-EDGE OPTIONS",
+    ctaSubtitle: "Scan to check medical eligibility & clinical protocols",
+  },
+  second_opinion: {
+    id: "second_opinion",
+    name: "72-Hour Rapid Second Opinion ($199)",
+    tag: "REMOTE CLINICAL ASSESSMENT",
+    headline: "EXPERT SECOND OPINION IN 72 HOURS",
+    subheadline: "Comprehensive Written Diagnostic Review by Leading Grade 3-A Chief Physicians",
+    accentColor: "#d97706",
+    bgGradStart: "#451a03",
+    bgGradEnd: "#1c0a00",
+    pillars: [
+      { icon: "⏱️", title: "Guaranteed 72h SLA:", desc: "Formal written medical review within 3 business days" },
+      { icon: "👨‍⚕️", title: "Top Chief Specialists:", desc: "Reviewed exclusively by department heads & professors" },
+      { icon: "📄", title: "Bilingual Medical Report:", desc: "Actionable staging, treatment path & surgical options" },
+      { icon: "🔒", title: "100% Remote & Safe:", desc: "No travel required; peace of mind before big decisions" },
+    ],
+    ctaTitle: "REQUEST SECOND OPINION NOW",
+    ctaSubtitle: "Scan to submit medical records securely ($199 flat fee)",
+  },
+};
 
 export interface PosterOptions {
   qrCanvas: HTMLCanvasElement;
   code: string;
-  role: "agent" | "kol";
-  userName?: string;
+  themeId?: PosterThemeId;
   format?: PosterFormat;
-  aiBackgroundUrl?: string; // This will now be used as the Hero Image
-  copyType?: CopyType; // "b2c" for patients, "b2b" for agents
+  userName?: string;
 }
 
-export const POSTER_DIMENSIONS: Record<PosterFormat, { width: number; height: number; label: string; ratio: string; desc: string }> = {
+export const POSTER_DIMENSIONS: Record<
+  PosterFormat,
+  { width: number; height: number; label: string; ratio: string; desc: string }
+> = {
   story: {
     width: 1080,
     height: 1920,
-    label: "9:16 竖版全屏",
+    label: "9:16 Story / Reels",
     ratio: "1080 × 1920 px",
-    desc: "适合 Instagram Story, TikTok, 微信朋友圈, WhatsApp 动态",
+    desc: "Optimized for Instagram Stories, TikTok, WhatsApp Status, and full-screen mobile share",
   },
   square: {
     width: 1080,
     height: 1080,
-    label: "1:1 社交方形",
+    label: "1:1 Social Feed",
     ratio: "1080 × 1080 px",
-    desc: "适合 Instagram Feed, LinkedIn, Twitter/X, 社群动态分享",
+    desc: "Optimized for Instagram Feed, LinkedIn posts, Twitter/X, and social group sharing",
   },
   flyer: {
     width: 1200,
     height: 1600,
-    label: "3:4 打印展架",
+    label: "3:4 Print & Flyer",
     ratio: "1200 × 1600 px",
-    desc: "适合 A4 高清印刷、线下接待台展架、商务单页",
+    desc: "Optimized for high-resolution A4 printing, clinic waiting rooms, and conference handouts",
   },
 };
 
 export async function generateMedicalTravelPoster(opts: PosterOptions): Promise<string> {
   const format = opts.format || "story";
+  const theme = POSTER_THEMES[opts.themeId || "b2b_partner"];
   const { width, height } = POSTER_DIMENSIONS[format];
 
   const canvas = document.createElement("canvas");
@@ -51,40 +147,12 @@ export async function generateMedicalTravelPoster(opts: PosterOptions): Promise<
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Could not get 2d canvas context");
 
-  // 1. Solid White/Light Background for the whole poster
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, width, height);
-
-  // Subtle brand green gradient at the very top
-  const topGrad = ctx.createLinearGradient(0, 0, width, 400);
-  topGrad.addColorStop(0, "#f0fdf4"); // very light green
-  topGrad.addColorStop(1, "#ffffff");
-  ctx.fillStyle = topGrad;
-  ctx.fillRect(0, 0, width, 400);
-
-  // Load Hero Image if provided
-  let heroImage: HTMLImageElement | null = null;
-  if (opts.aiBackgroundUrl) {
-    try {
-      heroImage = await loadBackgroundImage(opts.aiBackgroundUrl);
-    } catch (err) {
-      console.error("Failed to load hero image", err);
-    }
-  }
-
-  // Scale factor based on width
-  const scale = width / 1080;
-
   if (format === "story") {
-    if (opts.copyType === "b2b") {
-      renderB2BStoryLayout(ctx, opts, width, height, heroImage);
-    } else {
-      renderStoryLayout(ctx, opts, width, height, heroImage);
-    }
+    renderStoryLayout(ctx, opts, theme, width, height);
   } else if (format === "square") {
-    renderSquareLayout(ctx, opts, width, height, heroImage);
+    renderSquareLayout(ctx, opts, theme, width, height);
   } else {
-    renderFlyerLayout(ctx, opts, width, height, heroImage);
+    renderFlyerLayout(ctx, opts, theme, width, height);
   }
 
   return canvas.toDataURL("image/png");
@@ -93,192 +161,287 @@ export async function generateMedicalTravelPoster(opts: PosterOptions): Promise<
 function renderStoryLayout(
   ctx: CanvasRenderingContext2D,
   opts: PosterOptions,
+  theme: PosterTheme,
   width: number,
-  height: number,
-  heroImage: HTMLImageElement | null
+  height: number
 ) {
-  // --- 1. HEADER ---
-  ctx.fillStyle = "#064e3b"; // Dark brand green
-  ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("LinkChinaMed | Your Healthcare Concierge in China", 60, 100);
+  // Background Gradient
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
+  bgGrad.addColorStop(0, theme.bgGradStart);
+  bgGrad.addColorStop(0.7, theme.bgGradEnd);
+  bgGrad.addColorStop(1, "#020617");
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, width, height);
 
-  ctx.fillStyle = "#0f172a";
-  ctx.font = "bold 56px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("WORLD-CLASS HEALTHCARE.", 60, 180);
-  ctx.fillStyle = "#059669";
-  ctx.fillText("ZERO WAITING.", 60, 250);
-  
-  ctx.fillStyle = "#64748b";
-  ctx.font = "600 32px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("Direct Access to China's Premier AAA Hospitals", 60, 310);
+  // Subtle decorative geometric accents
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(width, 0, 500, 0, Math.PI * 2);
+  ctx.stroke();
 
-  // --- 2. HERO IMAGE ---
-  const imgY = 360;
-  const imgH = 480;
-  ctx.save();
-  roundRect(ctx, 60, imgY, 960, imgH, 24);
-  ctx.clip();
-  if (heroImage) {
-    // cover crop
-    const imgRatio = heroImage.width / heroImage.height;
-    const boxRatio = 960 / imgH;
-    let sWidth = heroImage.width;
-    let sHeight = heroImage.height;
-    let sX = 0;
-    let sY = 0;
-    
-    if (imgRatio > boxRatio) {
-      sWidth = sHeight * boxRatio;
-      sX = (heroImage.width - sWidth) / 2;
-    } else {
-      sHeight = sWidth / boxRatio;
-      sY = (heroImage.height - sHeight) / 2;
-    }
-    ctx.drawImage(heroImage, sX, sY, sWidth, sHeight, 60, imgY, 960, imgH);
+  ctx.beginPath();
+  ctx.arc(0, height * 0.4, 400, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 1. BRAND BADGE & HEADER
+  const pad = 64;
+  let curY = 90;
+
+  // Tag Badge
+  ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+  roundRect(ctx, pad, curY, 380, 52, 26);
+  ctx.fill();
+
+  ctx.fillStyle = "#34d399";
+  ctx.font = "bold 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText(`✨ ${theme.tag}`, pad + 24, curY + 34);
+
+  curY += 80;
+
+  // Company Brand Name
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 32px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("LinkChinaMed | Premier Global Healthcare", pad, curY);
+
+  curY += 65;
+
+  // Main Headline
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "900 52px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  const words = theme.headline.split(" ");
+  if (words.length > 3) {
+    const line1 = words.slice(0, 3).join(" ");
+    const line2 = words.slice(3).join(" ");
+    ctx.fillText(line1, pad, curY);
+    curY += 64;
+    ctx.fillStyle = "#6ee7b7";
+    ctx.fillText(line2, pad, curY);
   } else {
-    ctx.fillStyle = "#e2e8f0";
-    ctx.fillRect(60, imgY, 960, imgH);
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "32px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("【 高质感国际医疗大片（摄影实景） 】", width / 2, imgY + imgH / 2);
-    ctx.textAlign = "left";
+    ctx.fillText(theme.headline, pad, curY);
   }
-  ctx.restore();
 
-  // --- 3. PILLARS ---
-  const pillarsY = 900;
-  ctx.fillStyle = "#0f172a";
-  ctx.font = "bold 36px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("WHY GLOBAL PATIENTS CHOOSE US:", 60, pillarsY);
+  curY += 50;
 
-  const pillars = [
-    { icon: "⚡", title: "Zero Waitlist:", desc: "Fast-track oncology & surgery admission" },
-    { icon: "💰", title: "30%–70% Savings:", desc: "vs Western private medical costs" },
-    { icon: "🌐", title: "1-on-1 Bilingual Escort:", desc: "Full hospital accompaniment" },
-    { icon: "🛡️", title: "100% Transparent:", desc: "Official hospital billing" },
-  ];
+  // Subheadline
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "500 26px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  wrapText(ctx, theme.subheadline, pad, curY, width - pad * 2, 38);
 
-  let pY = pillarsY + 70;
-  for (const p of pillars) {
-    ctx.fillStyle = "#f8fafc";
-    roundRect(ctx, 60, pY, 960, 100, 16);
+  curY += 100;
+
+  // 2. VALUE PILLARS
+  for (const p of theme.pillars) {
+    ctx.fillStyle = "rgba(15, 23, 42, 0.65)";
+    roundRect(ctx, pad, curY, width - pad * 2, 115, 20);
     ctx.fill();
-    ctx.strokeStyle = "#e2e8f0";
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    ctx.font = "36px sans-serif";
-    ctx.fillText(p.icon, 90, pY + 65);
-    
-    ctx.fillStyle = "#0f172a";
-    ctx.font = "bold 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillText(p.title, 150, pY + 60);
+    // Icon
+    ctx.font = "40px sans-serif";
+    ctx.fillText(p.icon, pad + 28, curY + 70);
 
-    ctx.fillStyle = "#475569";
-    ctx.font = "500 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    const titleWidth = ctx.measureText(p.title).width;
-    ctx.fillText(p.desc, 150 + titleWidth + 15, pY + 60);
+    // Title
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 26px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    ctx.fillText(p.title, pad + 95, curY + 50);
 
-    pY += 120;
+    // Desc
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "400 23px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    ctx.fillText(p.desc, pad + 95, curY + 86);
+
+    curY += 135;
   }
 
-  // --- 4. FOOTER ---
-  const footerY = 1420;
-  ctx.fillStyle = "#f0fdf4";
-  roundRect(ctx, 60, footerY, 960, 420, 32);
+  // 3. BOTTOM FOOTER WITH QR CODE
+  const footerY = height - 580;
+  ctx.fillStyle = "#ffffff";
+  roundRect(ctx, pad, footerY, width - pad * 2, 510, 32);
   ctx.fill();
-  ctx.strokeStyle = "#bbf7d0";
+
+  // QR Code Frame
+  const qrBoxSize = 340;
+  const qrX = pad + 40;
+  const qrY = footerY + 85;
+
+  ctx.fillStyle = "#f8fafc";
+  roundRect(ctx, qrX, qrY, qrBoxSize, qrBoxSize, 20);
+  ctx.fill();
+  ctx.strokeStyle = "#e2e8f0";
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // QR
-  ctx.fillStyle = "#ffffff";
-  roundRect(ctx, 110, footerY + 60, 300, 300, 20);
-  ctx.fill();
-  ctx.drawImage(opts.qrCanvas, 120, footerY + 70, 280, 280);
+  // Draw QR Image
+  const qrInnerPad = 20;
+  ctx.drawImage(
+    opts.qrCanvas,
+    qrX + qrInnerPad,
+    qrY + qrInnerPad,
+    qrBoxSize - qrInnerPad * 2,
+    qrBoxSize - qrInnerPad * 2
+  );
 
-  // Text
+  // Footer Right Content
+  const textX = qrX + qrBoxSize + 40;
+  let textY = footerY + 130;
+
   ctx.fillStyle = "#0f172a";
-  ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("GET FREE CASE REVIEW", 450, footerY + 120);
-  ctx.fillText("& VIP GUIDE", 450, footerY + 175);
+  ctx.font = "900 36px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("SCAN TO CONNECT", textX, textY);
 
+  textY += 45;
   ctx.fillStyle = "#475569";
-  ctx.font = "30px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("Scan to chat with our international", 450, footerY + 235);
-  ctx.fillText("medical care team in English", 450, footerY + 275);
+  ctx.font = "500 23px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  wrapText(ctx, theme.ctaSubtitle, textX, textY, width - textX - pad, 32);
 
-  ctx.fillStyle = "#059669";
-  ctx.font = "bold 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("🔗 www.linkchinamed.com", 450, footerY + 340);
-
-  // Code
-  ctx.fillStyle = "#064e3b";
-  ctx.font = "bold 26px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText(`Partner Code: ${opts.code}`, 450, footerY + 380);
-}
-
-function renderSquareLayout(ctx: CanvasRenderingContext2D, opts: PosterOptions, width: number, height: number, heroImage: HTMLImageElement | null) {
-  // Simplified square layout
-  ctx.fillStyle = "#064e3b";
-  ctx.font = "bold 32px -apple-system, BlinkMacSystemFont, sans-serif";
-  ctx.fillText("LinkChinaMed | Premier Healthcare", 50, 70);
-
-  ctx.fillStyle = "#0f172a";
-  ctx.font = "bold 46px -apple-system, BlinkMacSystemFont, sans-serif";
-  ctx.fillText("WORLD-CLASS CARE. ZERO WAITING.", 50, 135);
-
-  // HERO
-  const imgY = 180;
-  const imgH = 400;
-  ctx.save();
-  roundRect(ctx, 50, imgY, 980, imgH, 20);
-  ctx.clip();
-  if (heroImage) {
-    ctx.drawImage(heroImage, 0, 0, heroImage.width, heroImage.height, 50, imgY, 980, imgH);
-  } else {
-    ctx.fillStyle = "#e2e8f0";
-    ctx.fillRect(50, imgY, 980, imgH);
-  }
-  ctx.restore();
-
-  // QR Block
+  textY += 95;
+  // Partner Code Pill
   ctx.fillStyle = "#f0fdf4";
-  roundRect(ctx, 50, 620, 980, 400, 24);
+  roundRect(ctx, textX, textY, width - textX - pad - 20, 95, 16);
   ctx.fill();
+  ctx.strokeStyle = "#86efac";
+  ctx.lineWidth = 2;
+  ctx.stroke();
 
-  ctx.fillStyle = "#ffffff";
-  roundRect(ctx, 90, 660, 320, 320, 16);
-  ctx.fill();
-  ctx.drawImage(opts.qrCanvas, 100, 670, 300, 300);
+  ctx.fillStyle = "#065f46";
+  ctx.font = "bold 18px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("OFFICIAL INVITE CODE", textX + 24, textY + 36);
 
-  ctx.fillStyle = "#0f172a";
-  ctx.font = "bold 42px -apple-system, sans-serif";
-  ctx.fillText("GET FREE CASE REVIEW", 450, 730);
-
-  ctx.fillStyle = "#475569";
-  ctx.font = "28px sans-serif";
-  ctx.fillText("Scan to chat with our medical team", 450, 790);
-  ctx.fillText("1-on-1 Bilingual Escort • 70% Less Cost", 450, 840);
-
-  ctx.fillStyle = "#059669";
-  ctx.font = "bold 32px monospace";
-  ctx.fillText(`CODE: ${opts.code}`, 450, 910);
-  
   ctx.fillStyle = "#047857";
-  ctx.font = "24px sans-serif";
-  ctx.fillText("🔗 www.linkchinamed.com", 450, 955);
+  ctx.font = "900 34px monospace";
+  ctx.fillText(opts.code || "LCM-VIP", textX + 24, textY + 74);
+
+  // Web Domain at bottom
+  ctx.fillStyle = "#64748b";
+  ctx.font = "bold 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  ctx.fillText("🔗 www.linkchinamed.com", textX, footerY + 440);
 }
 
-function renderFlyerLayout(ctx: CanvasRenderingContext2D, opts: PosterOptions, width: number, height: number, heroImage: HTMLImageElement | null) {
-  // TBD - same logic as story but adapted for 3:4.
-  // Just reuse story with slightly different spacing for now.
-  ctx.scale(width/1080, height/1920);
-  renderStoryLayout(ctx, opts, 1080, 1920, heroImage);
+function renderSquareLayout(
+  ctx: CanvasRenderingContext2D,
+  opts: PosterOptions,
+  theme: PosterTheme,
+  width: number,
+  height: number
+) {
+  const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+  bgGrad.addColorStop(0, theme.bgGradStart);
+  bgGrad.addColorStop(1, theme.bgGradEnd);
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, width, height);
+
+  const pad = 50;
+  let curY = 70;
+
+  // Header Tag
+  ctx.fillStyle = "#34d399";
+  ctx.font = "bold 18px -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.fillText(`✨ ${theme.tag} • LinkChinaMed`, pad, curY);
+
+  curY += 45;
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "900 42px -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.fillText(theme.headline, pad, curY);
+
+  curY += 40;
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "500 22px -apple-system, BlinkMacSystemFont, sans-serif";
+  wrapText(ctx, theme.subheadline, pad, curY, width - pad * 2, 30);
+
+  // Middle 2 Pillars
+  curY += 75;
+  for (let i = 0; i < Math.min(2, theme.pillars.length); i++) {
+    const p = theme.pillars[i];
+    ctx.fillStyle = "rgba(15, 23, 42, 0.55)";
+    roundRect(ctx, pad, curY, width - pad * 2, 85, 14);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.stroke();
+
+    ctx.font = "32px sans-serif";
+    ctx.fillText(p.icon, pad + 20, curY + 54);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 22px sans-serif";
+    ctx.fillText(p.title, pad + 70, curY + 42);
+
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "400 20px sans-serif";
+    ctx.fillText(p.desc, pad + 70, curY + 68);
+
+    curY += 100;
+  }
+
+  // Bottom White Card with QR
+  const footerY = height - 420;
+  ctx.fillStyle = "#ffffff";
+  roundRect(ctx, pad, footerY, width - pad * 2, 380, 24);
+  ctx.fill();
+
+  const qrBox = 290;
+  const qrX = pad + 35;
+  const qrY = footerY + 45;
+
+  ctx.fillStyle = "#f8fafc";
+  roundRect(ctx, qrX, qrY, qrBox, qrBox, 16);
+  ctx.fill();
+
+  const inner = 16;
+  ctx.drawImage(opts.qrCanvas, qrX + inner, qrY + inner, qrBox - inner * 2, qrBox - inner * 2);
+
+  const textX = qrX + qrBox + 35;
+  let textY = footerY + 95;
+
+  ctx.fillStyle = "#0f172a";
+  ctx.font = "900 32px sans-serif";
+  ctx.fillText(theme.ctaTitle, textX, textY);
+
+  textY += 38;
+  ctx.fillStyle = "#475569";
+  ctx.font = "500 20px sans-serif";
+  wrapText(ctx, theme.ctaSubtitle, textX, textY, width - textX - pad, 28);
+
+  textY += 80;
+  ctx.fillStyle = "#f0fdf4";
+  roundRect(ctx, textX, textY, width - textX - pad - 10, 80, 12);
+  ctx.fill();
+  ctx.strokeStyle = "#86efac";
+  ctx.stroke();
+
+  ctx.fillStyle = "#065f46";
+  ctx.font = "bold 16px sans-serif";
+  ctx.fillText("PARTNER INVITE CODE", textX + 18, textY + 30);
+
+  ctx.fillStyle = "#047857";
+  ctx.font = "900 28px monospace";
+  ctx.fillText(opts.code || "LCM-VIP", textX + 18, textY + 64);
+}
+
+function renderFlyerLayout(
+  ctx: CanvasRenderingContext2D,
+  opts: PosterOptions,
+  theme: PosterTheme,
+  width: number,
+  height: number
+) {
+  // Flyer: 1200 x 1600 (3:4 ratio for printing)
+  ctx.scale(width / 1080, height / 1920);
+  renderStoryLayout(ctx, opts, theme, 1080, 1920);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
   if (w < 2 * r) r = w / 2;
   if (h < 2 * r) r = h / 2;
   ctx.beginPath();
@@ -290,106 +453,27 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-function loadBackgroundImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = url;
-  });
-}
-
-function renderB2BStoryLayout(
+function wrapText(
   ctx: CanvasRenderingContext2D,
-  opts: PosterOptions,
-  width: number,
-  height: number,
-  heroImage: HTMLImageElement | null
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number
 ) {
-  // Dark Green Background for B2B
-  ctx.fillStyle = "#064e3b";
-  ctx.fillRect(0, 0, width, height);
-
-  // Subtle gradient at bottom
-  const botGrad = ctx.createLinearGradient(0, height - 600, 0, height);
-  botGrad.addColorStop(0, "#064e3b");
-  botGrad.addColorStop(1, "#022c22");
-  ctx.fillStyle = botGrad;
-  ctx.fillRect(0, height - 600, width, 600);
-
-  // --- 1. HEADER ---
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("LinkChinaMed | Official Partner", 60, 100);
-
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 56px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("Monetize Medical Travel.", 60, 180);
-  ctx.fillStyle = "#34d399";
-  ctx.fillText("Earn 5%-10% Team Override Commissions", 60, 250);
-
-  // --- 2. PILLARS (B2B variant) ---
-  const pillarsY = 360;
-  const pillars = [
-    { icon: "💎", title: "High-Ticket Earnings", desc: "Earn $100–$2,500+ per referral." },
-    { icon: "🔄", title: "Lifetime Attribution", desc: "Permanent client binding & repeat payout." },
-    { icon: "🎓", title: "Full Creator Toolkit", desc: "Tested pitch scripts & weekly webinars." },
-    { icon: "🤝", title: "24/7 Medical Concierge", desc: "Hospital team handles all logistics." },
-  ];
-
-  let pY = pillarsY;
-  for (const p of pillars) {
-    ctx.fillStyle = "#0f172a";
-    roundRect(ctx, 60, pY, 960, 120, 20);
-    ctx.fill();
-
-    ctx.font = "40px sans-serif";
-    ctx.fillText(p.icon, 100, pY + 75);
-    
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 32px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillText(p.title, 170, pY + 55);
-
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "500 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    ctx.fillText(p.desc, 170, pY + 95);
-
-    pY += 150;
+  const words = text.split(" ");
+  let line = "";
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + " ";
+    const metrics = ctx.measureText(testLine);
+    const testWidth = metrics.width;
+    if (testWidth > maxWidth && n > 0) {
+      ctx.fillText(line, x, y);
+      line = words[n] + " ";
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
   }
-
-  // --- 3. FOOTER (QR CODE) ---
-  const footerY = 1000;
-  ctx.fillStyle = "#ffffff";
-  roundRect(ctx, 60, footerY, 960, 800, 32);
-  ctx.fill();
-
-  // QR
-  roundRect(ctx, (width - 400) / 2, footerY + 80, 400, 400, 20);
-  ctx.fill();
-  ctx.drawImage(opts.qrCanvas, (width - 360) / 2, footerY + 100, 360, 360);
-
-  // Text
-  ctx.fillStyle = "#0f172a";
-  ctx.textAlign = "center";
-  ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("SCAN TO CONNECT", width / 2, footerY + 550);
-
-  // Code box
-  ctx.fillStyle = "#f8fafc";
-  roundRect(ctx, 240, footerY + 600, 600, 120, 24);
-  ctx.fill();
-  ctx.strokeStyle = "#e2e8f0";
-  ctx.lineWidth = 3;
-  ctx.stroke();
-
-  ctx.fillStyle = "#64748b";
-  ctx.font = "bold 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  ctx.fillText("PARTNER CODE", width / 2, footerY + 645);
-  
-  ctx.fillStyle = "#059669";
-  ctx.font = "bold 48px monospace";
-  ctx.fillText(opts.code, width / 2, footerY + 695);
-  
-  ctx.textAlign = "left";
+  ctx.fillText(line, x, y);
 }
