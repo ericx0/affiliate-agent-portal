@@ -56,6 +56,12 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
           return;
         }
 
+        if (data.promoter && typeof window !== "undefined") {
+          try {
+            localStorage.setItem("lcm_agent_promoter", JSON.stringify(data.promoter));
+          } catch {}
+        }
+
         setLoading(false);
       } catch {
         if (cancelled) return;

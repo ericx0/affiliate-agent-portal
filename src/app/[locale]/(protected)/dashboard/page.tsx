@@ -64,7 +64,29 @@ const TOP_KOL_LIMIT = 20;
 export default function AgentDashboard() {
   const t = useTranslations("agent");
   const tDash = useTranslations("dashboard");
-  const [stats, setStats] = useState<AgentStats | null>(null);
+  const [stats, setStats] = useState<AgentStats | null>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("lcm_agent_promoter");
+        if (raw) {
+          const p = JSON.parse(raw);
+          const rate = Number(p.commission_rate) || 10;
+          return {
+            totalKols: 0,
+            activeKols: 0,
+            totalPaid: 0,
+            totalPending: 0,
+            totalApproved: 0,
+            agentRate: rate,
+            teamOrdersInProgress: 0,
+            teamOrdersCompleted: 0,
+            teamGmvClosed: 0,
+          };
+        }
+      } catch {}
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(true);
   const [invite, setInvite] = useState<InviteCodeResponse | null>(null);
   const [copied, setCopied] = useState(false);
@@ -75,19 +97,32 @@ export default function AgentDashboard() {
     (async () => {
       try {
         setLoading(true);
-        let realRate = 5;
+        let realRate = 10;
         let promoterData: any = null;
         let userRes: any = null;
         try {
+          const raw = typeof window !== "undefined" ? localStorage.getItem("lcm_agent_promoter") : null;
+          if (raw) {
+            promoterData = JSON.parse(raw);
+            if (promoterData.commission_rate) {
+              realRate = Number(promoterData.commission_rate);
+            }
+          }
+        } catch {}
+
+        try {
           const { data } = await supabase.auth.getUser();
           userRes = data;
-          const res = await fetch("/api/auth/check-agent");
-          if (res.ok) {
-            const checkData = await res.json();
-            if (checkData.promoter) {
-              promoterData = checkData.promoter;
-              if (promoterData.commission_rate) {
-                realRate = Number(promoterData.commission_rate);
+          if (!promoterData) {
+            const res = await fetch("/api/auth/check-agent");
+            if (res.ok) {
+              const checkData = await res.json();
+              if (checkData.promoter) {
+                promoterData = checkData.promoter;
+                if (promoterData.commission_rate) {
+                  realRate = Number(promoterData.commission_rate);
+                }
+                localStorage.setItem("lcm_agent_promoter", JSON.stringify(promoterData));
               }
             }
           }
@@ -199,19 +234,11 @@ export default function AgentDashboard() {
             </div>
             <div>
               <div className="text-xs font-bold text-amber-700 uppercase tracking-wider">{t("tierBadge")}</div>
-              {loading && !stats ? (
-                <div className="h-5 w-24 bg-amber-200/60 rounded animate-pulse mt-1" />
-              ) : (
-                <div className="text-lg font-bold text-slate-900 mt-0.5">{tierName}</div>
-              )}
+              <div className="text-lg font-bold text-slate-900 mt-0.5">{tierName}</div>
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            {loading && !stats ? (
-              <div className="h-8 w-16 bg-amber-200/60 rounded animate-pulse" />
-            ) : (
-              <span className="text-3xl font-extrabold text-amber-700">{tierRate}</span>
-            )}
+            <span className="text-3xl font-extrabold text-amber-700">{tierRate}</span>
             <span className="text-xs text-slate-500 font-semibold">{t("commission")}</span>
           </div>
           <div className="space-y-1.5">
