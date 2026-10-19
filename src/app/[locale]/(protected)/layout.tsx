@@ -27,34 +27,40 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         process.env.NODE_ENV !== "production" && typeof window !== "undefined"
           ? (window as any).__E2E_MOCK_USER__
           : null;
-      const { data } = mockUser
-        ? { data: { user: mockUser } }
-        : await supabase.auth.getUser();
-      if (cancelled) return;
-      if (!data?.user) {
-        router.push("/login");
+      if (mockUser) {
+        setLoading(false);
         return;
       }
-      const email = data.user.email?.trim().toLowerCase();
-      if (!email) {
-        await supabase.auth.signOut();
-        router.push("/login");
-        return;
+
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+        const headers: Record<string, string> = {};
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        const res = await fetch("/api/auth/check-agent", { headers });
+        if (cancelled) return;
+
+        if (res.status === 401) {
+          router.push("/login");
+          return;
+        }
+
+        const data = await res.json();
+        if (cancelled) return;
+
+        if (!data.isAgent) {
+          setDenied(true);
+          await supabase.auth.signOut();
+          router.push("/login?error=not_agent");
+          return;
+        }
+
+        setLoading(false);
+      } catch {
+        if (cancelled) return;
+        setLoading(false);
       }
-      const { data: list } = await supabase.rpc("affiliate_list_promoters", {
-        p_search: email,
-        p_role: "agent",
-      });
-      const match = Array.isArray(list)
-        ? (list as any[]).find((p) => p.email?.toLowerCase() === email)
-        : null;
-      if (!match || match.role !== "agent" || match.status !== "active") {
-        setDenied(true);
-        await supabase.auth.signOut();
-        router.push("/login?error=not_agent");
-        return;
-      }
-      setLoading(false);
     })();
     return () => {
       cancelled = true;

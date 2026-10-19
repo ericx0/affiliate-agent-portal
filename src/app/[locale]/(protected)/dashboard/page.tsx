@@ -77,27 +77,33 @@ export default function AgentDashboard() {
         setLoading(true);
         let realRate = 5;
         let promoterData: any = null;
+        let userRes: any = null;
         try {
-          const { data: userRes } = await supabase.auth.getUser();
-          const userEmail = userRes?.user?.email?.trim().toLowerCase();
-          if (userEmail) {
-            const { data: list } = await supabase.rpc("affiliate_list_promoters", {
-              p_search: userEmail,
-              p_role: "agent",
-            });
-            if (Array.isArray(list)) {
-              promoterData = list.find((p: any) => p.email?.toLowerCase() === userEmail);
-              if (promoterData?.commission_rate) {
+          const { data } = await supabase.auth.getUser();
+          userRes = data;
+          const res = await fetch("/api/auth/check-agent");
+          if (res.ok) {
+            const checkData = await res.json();
+            if (checkData.promoter) {
+              promoterData = checkData.promoter;
+              if (promoterData.commission_rate) {
                 realRate = Number(promoterData.commission_rate);
               }
             }
           }
+        } catch (e) {
+          console.warn("Agent lookup error:", e);
+        }
 
-          const data = await apiFetch<AgentStats>("/api/affiliate/agent/stats").catch(
-            () => null
-          );
+          // Parallelize all dashboard data fetching
+          const [statsData, inviteData, kolsData, stripeRes] = await Promise.all([
+            apiFetch<AgentStats>("/api/affiliate/agent/stats").catch(() => null),
+            apiFetch<InviteCodeResponse>("/api/affiliate/agent/invite-code").catch(() => null),
+            apiFetch<{ kols: TeamKol[] }>("/api/affiliate/agent/kols").catch(() => ({ kols: [] })),
+            apiFetch<{ data: StripeStatus }>("/api/affiliate/me/stripe-status").catch(() => null),
+          ]);
 
-          const currentStats: AgentStats = data ?? {
+          const currentStats: AgentStats = statsData ?? {
             totalKols: 0,
             activeKols: 0,
             totalPaid: 0,
@@ -113,10 +119,6 @@ export default function AgentDashboard() {
           }
           setStats(currentStats);
 
-          const inviteData = await apiFetch<InviteCodeResponse>(
-            "/api/affiliate/agent/invite-code"
-          ).catch(() => null);
-
           const agentCode =
             inviteData?.agent_invite_code ||
             promoterData?.agent_invite_code ||
@@ -131,25 +133,13 @@ export default function AgentDashboard() {
             });
           }
 
-          const kolsData = await apiFetch<{ kols: TeamKol[] }>(
-            "/api/affiliate/agent/kols"
-          ).catch(() => ({ kols: [] }));
-
           const sorted = (kolsData.kols || [])
             .slice()
             .sort((a, b) => (b.gmv_total || 0) - (a.gmv_total || 0))
             .slice(0, TOP_KOL_LIMIT);
           setTopKols(sorted);
 
-          // Stripe KYC status (separate endpoint - already exists, mirrors
-          // stripe settings page so this card can show real-time state).
-          const stripeRes = await apiFetch<{ data: StripeStatus }>(
-            "/api/affiliate/me/stripe-status"
-          ).catch(() => null);
           if (stripeRes?.data) setStripe(stripeRes.data);
-        } catch (e) {
-          console.warn("Direct RPC agent lookup error:", e);
-        }
       } catch (err) {
         console.error("Failed to load agent dashboard:", err);
       } finally {
@@ -209,11 +199,19 @@ export default function AgentDashboard() {
             </div>
             <div>
               <div className="text-xs font-bold text-amber-700 uppercase tracking-wider">{t("tierBadge")}</div>
-              <div className="text-lg font-bold text-slate-900 mt-0.5">{tierName}</div>
+              {loading && !stats ? (
+                <div className="h-5 w-24 bg-amber-200/60 rounded animate-pulse mt-1" />
+              ) : (
+                <div className="text-lg font-bold text-slate-900 mt-0.5">{tierName}</div>
+              )}
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-amber-700">{tierRate}</span>
+            {loading && !stats ? (
+              <div className="h-8 w-16 bg-amber-200/60 rounded animate-pulse" />
+            ) : (
+              <span className="text-3xl font-extrabold text-amber-700">{tierRate}</span>
+            )}
             <span className="text-xs text-slate-500 font-semibold">{t("commission")}</span>
           </div>
           <div className="space-y-1.5">
@@ -239,9 +237,13 @@ export default function AgentDashboard() {
             </div>
             <div>
               <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t("teamCardTitle")}</div>
-              <div className="text-lg font-bold text-slate-900 mt-0.5">
-                {stats?.totalKols ?? 0} <span className="text-xs text-slate-500 font-medium">{t("personUnit")}</span>
-              </div>
+              {loading && !stats ? (
+                <div className="h-5 w-16 bg-slate-200 rounded animate-pulse mt-1" />
+              ) : (
+                <div className="text-lg font-bold text-slate-900 mt-0.5">
+                  {stats?.totalKols ?? 0} <span className="text-xs text-slate-500 font-medium">{t("personUnit")}</span>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-xs">

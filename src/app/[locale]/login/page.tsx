@@ -80,32 +80,34 @@ export default function AgentLoginPage() {
     e.preventDefault();
     setError("");
 
-    if (!turnstileToken) {
-      setError(t("captchaRequired"));
-      return;
-    }
-
     setSending(true);
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-        options: { captchaToken: turnstileToken },
+      const res = await fetch("/api/auth/login-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
-
-      if (signInError) {
+      const data = await res.json();
+      if (!res.ok) {
         setError(
-          signInError.message.toLowerCase().includes("credential")
+          data.error?.toLowerCase().includes("credential")
             ? t("passwordErrorInvalid")
-            : signInError.message || t("passwordErrorGeneric")
+            : data.error || t("passwordErrorGeneric")
         );
-        setTurnstileToken("");
         return;
       }
 
+      if (data.session) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+      }
+
       const params = new URLSearchParams(window.location.search);
-      const target = params.get("next");
-      router.push(safeNextPath(target ?? undefined));
+      const redirectParam = params.get("redirect") || params.get("next");
+      const target = redirectParam ? safeNextPath(redirectParam) : "/dashboard";
+      window.location.href = target;
     } catch (e: any) {
       setError(e.message || t("passwordErrorGeneric"));
     } finally {
@@ -122,44 +124,27 @@ export default function AgentLoginPage() {
       return;
     }
 
-    try {
-      const normalizedEmail = email.trim().toLowerCase();
-      const { data, error: rpcErr } = await supabase.rpc("affiliate_list_promoters", {
-        p_search: normalizedEmail,
-      });
-
-      if (rpcErr) {
-        console.error("affiliate_list_promoters check failed:", rpcErr);
-        setError(t("checkFailed"));
-        return;
-      }
-
-      const match = findAgentMatch(data, normalizedEmail);
-
-      if (!match) {
-        // Distinguish KOL from everything-else for the user-facing message;
-        // the server only reveals that this email is NOT an agent.
-        const candidate = Array.isArray(data)
-          ? data.find((p: any) => p.email?.toLowerCase() === normalizedEmail)
-          : null;
-        setError(candidate?.role === "kol" ? t("registeredAsKol") : t("notRegisteredAgent"));
-        return;
-      }
-    } catch {
-      setError(t("checkFailed"));
-      return;
-    }
-
     setSending(true);
     try {
-      const { error: otpErr } = await supabase.auth.signInWithOtp({
-        email,
-        options: { captchaToken: turnstileToken, shouldCreateUser: false },
+      const res = await fetch("/api/auth/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, turnstileToken }),
       });
-      if (otpErr) throw otpErr;
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.error === "registered_as_kol") {
+          setError(t("registeredAsKol"));
+        } else if (data.error === "not_registered_agent") {
+          setError(t("notRegisteredAgent"));
+        } else {
+          setError(t("checkFailed"));
+        }
+        return;
+      }
       setSent(true);
-    } catch (e: any) {
-      setError(e.message);
+    } catch {
+      setError(t("checkFailed"));
     } finally {
       setSending(false);
     }
@@ -170,15 +155,33 @@ export default function AgentLoginPage() {
     setError("");
     setVerifying(true);
     try {
-      const { error: verifyErr } = await supabase.auth.verifyOtp({
-        email,
-        token: code,
-        type: "email",
+      const res = await fetch("/api/auth/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
       });
-      if (verifyErr) throw verifyErr;
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Verification failed");
+        return;
+      }
+      if (data.session) {
+        try {
+          await supabase.auth.setSession({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+          });
+        } catch (e) {
+          console.warn("Client setSession error:", e);
+        }
+      }
       const params = new URLSearchParams(window.location.search);
-      const target = params.get("next");
-      router.push(safeNextPath(target ?? undefined));
+      const redirectParam = params.get("redirect") || params.get("next");
+      const target = redirectParam ? safeNextPath(redirectParam) : "/dashboard";
+      const finalUrl = target.startsWith("/en") || target.startsWith("/zh") || target.startsWith("/ar") || target.startsWith("/es") || target.startsWith("/ru")
+        ? target
+        : `/en${target}`;
+      window.location.href = finalUrl;
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -262,13 +265,10 @@ export default function AgentLoginPage() {
                   {t("forgotPassword")}
                 </Link>
               </div>
-              <div className="flex justify-center">
-                {mounted && <div ref={turnstileRef} />}
-              </div>
               {error && <p className="text-sm text-red-600">{error}</p>}
               <button
                 type="submit"
-                disabled={sending || !turnstileToken}
+                disabled={sending}
                 className="w-full h-10 rounded-md bg-brand-500 text-white font-medium hover:opacity-90 disabled:opacity-50"
               >
                 {sending ? t("signingIn") : t("signIn")}
@@ -320,7 +320,7 @@ export default function AgentLoginPage() {
                 disabled={verifying || code.length !== 6}
                 className="w-full h-10 rounded-md bg-brand-500 text-white font-medium hover:opacity-90 disabled:opacity-50"
               >
-                {verifying ? t("sending") : t("verifyLogin")}
+                {verifying ? t("signingIn") : t("verifyLogin")}
               </button>
               <button
                 type="button"

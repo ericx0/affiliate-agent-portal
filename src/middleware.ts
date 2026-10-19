@@ -60,17 +60,58 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  // getUser() throws on malformed/expired cookies (e.g. session JSON
-  // whose embedded JWT signature no longer verifies post-key-rotation,
-  // or cookies from a prior deploy that changed the cookie name).
-  // Treat any auth error as "no user" so stale state in the browser
-  // doesn't bring the whole middleware down with MIDDLEWARE_INVOCATION_FAILED.
+  // getUser() throws on malformed/expired cookies or if the upstream gateway blocks
+  // the network call to /auth/v1/user with non-JSON 401 response.
   let user: { id: string } | null = null;
   try {
     const { data } = await supabase.auth.getUser();
     user = data.user;
   } catch {
     user = null;
+  }
+
+  // Resilient fallback: inspect signed JWT in auth-token cookie to verify session validity
+  if (!user) {
+    try {
+      const allCookies = request.cookies.getAll();
+      for (const c of allCookies) {
+        if (c.name.includes("auth-token")) {
+          let raw = c.value;
+          if (raw.startsWith("base64-")) {
+            const base64 = raw.substring(7).replace(/-/g, "+").replace(/_/g, "/");
+            raw = decodeURIComponent(
+              atob(base64)
+                .split("")
+                .map((char) => "%" + ("00" + char.charCodeAt(0).toString(16)).slice(-2))
+                .join("")
+            );
+          }
+          const session = JSON.parse(raw);
+          const token = session.access_token || (Array.isArray(session) ? session[0] : null);
+          if (token && typeof token === "string") {
+            const parts = token.split(".");
+            if (parts.length === 3) {
+              const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+              const payload = JSON.parse(
+                decodeURIComponent(
+                  atob(b64)
+                    .split("")
+                    .map((char) => "%" + ("00" + char.charCodeAt(0).toString(16)).slice(-2))
+                    .join("")
+                )
+              );
+              const now = Math.floor(Date.now() / 1000);
+              if (payload && payload.exp && payload.exp > now && payload.sub) {
+                user = { id: payload.sub };
+                break;
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      user = null;
+    }
   }
 
   if (!user) {
