@@ -43,6 +43,22 @@ interface SpecialtyItem {
 
 const SPECIALTIES_DATA: SpecialtyItem[] = [
   {
+    id: "specialty-rx-699",
+    nameEn: "Specialty Rx VIP Access & Chaperone ($699)",
+    nameZh: "肿瘤靶向特药处方直采与陪采购全包 ($699)",
+    direction: "oncology",
+    hospitals: "复旦大学附属肿瘤医院、北大肿瘤医院、中大肿瘤防治中心及院边 DTP 特药药房",
+    clinicalHighlights: [
+      "舒沃替尼 (Sunvozertinib)、戈利昔替尼 (Golidocitinib)、塞沃替尼 (Savolitinib)、泽布替尼 (Zanubrutinib) 等原研特药合规直采",
+      "三甲肿瘤专科门诊开具 90 天处方，DTP 药房国药/上药总仓 72h 调货留店，药房 POS 柜台直刷公立平价",
+      "全包尊享一口价 $699：行前医学审方、机场/酒店/医院豪华专车接送、1v1 双语陪诊、5件套英文认证海关通关档案（FDA 90天自用合规）",
+      "支持直系亲属持授权书 (POA) 来华代开代取，晚期/行动不便患者免除长途飞行",
+    ],
+    costAdvantage: "泽布替尼等靶向药中国 DTP 药费仅为欧美 1/15；服务费 $699 一口价全包专车接送与海关通关文件，若不符指征 100% 全额秒退。",
+    readyCopyEn: "Save up to 90% on breakthrough cancer targeted drugs (Sunvozertinib, Zanubrutinib, Savolitinib). LinkChinaMed's $699 VIP Specialty Rx Access covers pre-travel NGS review, 72h DTP pharmacy stock lock, full VIP ground transfers, 1-day hospital Rx escort & certified 5-item FDA/Customs clearance dossier. Immediate family proxy supported. Book now: [InviteLink]",
+    readyCopyZh: "【肿瘤靶向药来华陪采购】舒沃替尼、泽布替尼、塞沃替尼等原研特药比欧美便宜高达90%！平台提供 $699 尊享全包服务：行前审方、DTP特药房锁药、全程商务专车接送、三甲门诊开方提药陪同及5件套英文海关通关红头文件。支持家属代办。立即预约：[InviteLink]",
+  },
+  {
     id: "onc-car-t",
     nameEn: "BCMA & CD19 CAR-T Cell Therapy",
     nameZh: "全人源 BCMA / CD19 CAR-T 细胞免疫疗法",

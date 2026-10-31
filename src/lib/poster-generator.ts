@@ -10,7 +10,8 @@ export type PosterThemeId =
   | "b2b_partner"
   | "premier_hospitals"
   | "cutting_edge_oncology"
-  | "second_opinion";
+  | "second_opinion"
+  | "specialty_rx";
 
 export interface PosterTheme {
   id: PosterThemeId;
@@ -98,6 +99,24 @@ export const POSTER_THEMES: Record<PosterThemeId, PosterTheme> = {
     ],
     ctaTitle: "REQUEST SECOND OPINION NOW",
     ctaSubtitle: "Scan to submit medical records securely ($199 flat fee)",
+  },
+  specialty_rx: {
+    id: "specialty_rx",
+    name: "Specialty Rx VIP Access ($699)",
+    tag: "ONCOLOGY TARGETED DRUG ACCESS",
+    headline: "TARGETED CANCER THERAPIES & RX ESCORT",
+    subheadline: "Direct Access to China-Approved Innovative Oncology Drugs with 5-Item Customs Clearance",
+    accentColor: "#059669",
+    bgGradStart: "#064e3b",
+    bgGradEnd: "#022c22",
+    pillars: [
+      { icon: "💊", title: "Breakthrough Targeted Drugs:", desc: "Sunvozertinib, Zanubrutinib & Savolitinib at 1/10 US cost" },
+      { icon: "⚡", title: "72h Pharmacy Stock Lock:", desc: "Licensed DTP pharmacy warehouse allocation with batch verification" },
+      { icon: "🚗", title: "VIP Ground Transfers:", desc: "Full chauffeur service: airport pickup, clinic escort & hotel return" },
+      { icon: "🛡️", title: "5-Item Customs Dossier:", desc: "Certified FDA 90-day personal importation & physician letters ($699 flat)" },
+    ],
+    ctaTitle: "RESERVE SPECIALTY RX VIP ($699)",
+    ctaSubtitle: "Scan to check drug stock & lock prescription reservation",
   },
 };
 
