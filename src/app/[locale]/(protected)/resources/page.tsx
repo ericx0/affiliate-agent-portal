@@ -135,7 +135,7 @@ const SPECIALTIES_DATA: SpecialtyItem[] = [
   },
   {
     id: "second-opinion",
-    nameEn: "72-Hour Rapid Medical Second Opinion ($199)",
+    nameEn: "72-Hour Rapid Medical Second Opinion ($359)",
     nameZh: "72 小时三甲特需专家书面第二诊疗意见 (远程评估)",
     direction: "remote",
     hospitals: "中国全部 63 家顶级公立三甲国际部主任医师库",
@@ -144,9 +144,9 @@ const SPECIALTIES_DATA: SpecialtyItem[] = [
       "由全国顶尖公立三甲医院科室主任/教授级专家亲自背书审阅",
       "对标国际 NCCN 临床路径，提供明确的病理分期、手术可切除性评估及靶向用药建议",
     ],
-    costAdvantage: "梅奥/纪念斯隆远程二诊通常要价 $800–$2,500；LinkChinaMed 官方三甲网络统一 $199 极速交付。",
-    readyCopyEn: "Get Clarity Before Major Surgery: Leading Chief Physicians from China's top Grade 3-A hospitals will review your medical records and provide a comprehensive written second opinion in 72 hours. Just $199 flat fee (vs $1,500+ in the US). Submit records online: [InviteLink]",
-    readyCopyZh: "【重大病情二次确认】无需长途奔波，中国顶尖三甲医院主任医师 72 小时内出具全英文正式诊疗建议，全国统一定价仅 $199（欧美同类服务标价 $1,500+）。扫码在线提交：[InviteLink]",
+    costAdvantage: "梅奥/纪念斯隆远程二诊通常要价 $800–$2,500；LinkChinaMed 官方三甲网络统一 $359 极速交付。",
+    readyCopyEn: "Get Clarity Before Major Surgery: Leading Chief Physicians from China's top Grade 3-A hospitals will review your medical records and provide a comprehensive written second opinion in 72 hours. Just $359 flat fee (vs $1,500+ in the US). Submit records online: [InviteLink]",
+    readyCopyZh: "【重大病情二次确认】无需长途奔波，中国顶尖三甲医院主任医师 72 小时内出具全英文正式诊疗建议，全国统一定价仅 $359（欧美同类服务标价 $1,500+）。扫码在线提交：[InviteLink]",
   },
 ];
 
@@ -172,9 +172,9 @@ const BATTLECARDS = [
     a: "China has developed a robust domestic biotechnology supply chain with locally manufactured viral vectors, magnetic beads, and automated cell culture systems, drastically reducing production overhead. Combined with standardized public hospital special service pricing, international patients enjoy the exact same high-potency cell therapies without the massive pharmaceutical price inflation seen in the US.",
   },
   {
-    q: "How does the $199 Second Opinion work? Does the patient have to travel?",
-    qZh: "72 小时 $199 远程第二意见如何运作？患者必须来中国吗？",
-    a: "No travel required! The patient simply uploads their scans (DICOM/CT/MRI) and pathology reports online. Our clinical team translates and compiles the dossier, submits it to a Chief Physician at a designated National Medical Center, and delivers a comprehensive written English evaluation report within 72 business hours. If the patient decides to travel later, the $199 is 100% credited toward their on-site concierge package.",
+    q: "How does the $359 Second Opinion work? Does the patient have to travel?",
+    qZh: "72 小时 $359 远程第二意见如何运作？患者必须来中国吗？",
+    a: "No travel required! The patient simply uploads their scans (DICOM/CT/MRI) and pathology reports online. Our clinical team translates and compiles the dossier, submits it to a Chief Physician at a designated National Medical Center, and delivers a comprehensive written English evaluation report within 72 business hours. If the patient decides to travel later, the $359 is 100% credited toward their on-site concierge package.",
   },
   {
     q: "How are funds handled? Is payment safe?",
@@ -611,7 +611,7 @@ ${inviteLink} (رمز الشريك: ${agentCode})`,
             患者就医前 5 分钟初筛自测清单 (Pre-screening Checklist)
           </div>
           <p className="text-xs text-slate-500 leading-relaxed">
-            在向平台提交患者或推荐 $199 第二意见前，请引导患者或其家属核实以下 5 项条件，确保病例满足三甲特需承接标准：
+            在向平台提交患者或推荐 $359 第二意见前，请引导患者或其家属核实以下 5 项条件，确保病例满足三甲特需承接标准：
           </p>
 
           <div className="space-y-3">
@@ -633,8 +633,8 @@ ${inviteLink} (رمز الشريك: ${agentCode})`,
                 desc: "患者及陪同亲属的国际护照有效期需在 6 个月以上。平台将为合格患者出具三甲医院官方就医邀请函以办理中国 S2 医疗陪护签证。",
               },
               {
-                q: "5. 第一步首推远程第二诊疗意见 ($199)",
-                desc: "凡对治疗方案有任何犹豫的患者，一律首推 $199 远程第二诊疗意见。专家确认接诊后再订机票，双方风险降为零。",
+                q: "5. 第一步首推远程第二诊疗意见 ($359)",
+                desc: "凡对治疗方案有任何犹豫的患者，一律首推 $359 远程第二诊疗意见。专家确认接诊后再订机票，双方风险降为零。",
               },
             ].map((checkItem, idx) => (
               <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1">

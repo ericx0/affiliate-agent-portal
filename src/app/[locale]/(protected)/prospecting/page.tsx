@@ -165,18 +165,18 @@ export default function ProspectingPage() {
                 <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
                   突破方向 04 • 低门槛敲门砖
                 </span>
-                <span className="text-xs font-mono text-slate-400">$199 Rapid Second Opinion</span>
+                <span className="text-xs font-mono text-slate-400">$359 Rapid Second Opinion</span>
               </div>
               <h3 className="text-lg font-bold text-slate-900">
                 72 小时国际专家远程第二诊疗意见
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                绝大多数国际重症患者在赴华前必须消除疑虑。通过 $199 远程第二诊疗意见，患者无需长途飞行，仅需在线上传影像和病理资料，由三甲公立医院主任医师在 72 小时内出具全英文正式书面诊疗评估。
+                绝大多数国际重症患者在赴华前必须消除疑虑。通过 $359 远程第二诊疗意见，患者无需长途飞行，仅需在线上传影像和病理资料，由三甲公立医院主任医师在 72 小时内出具全英文正式书面诊疗评估。
               </p>
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-150 text-xs space-y-1.5">
                 <div className="font-bold text-slate-800">最高转化触达策略：</div>
                 <div className="text-slate-600">• 作为拓客的第一道低成本验证，极易打消跨国就医信任摩擦；</div>
-                <div className="text-slate-600">• 经评估适合跨境治疗者，二诊评估费 $199 可全额抵扣后续实地陪诊包；</div>
+                <div className="text-slate-600">• 经评估适合跨境治疗者，二诊评估费 $359 可全额抵扣后续实地陪诊包；</div>
                 <div className="text-slate-600">• KOL 与代理商可获 $40+ 即时分成，后续成单再享 5%–10% 高额返佣。</div>
               </div>
             </div>
@@ -411,7 +411,7 @@ export default function ProspectingPage() {
                 </div>
                 <div className="font-bold text-slate-800 pt-1">回复规范 (极其关键)：</div>
                 <p className="text-slate-500 leading-relaxed">
-                  严禁硬发广告！以病友或国际医疗志愿者身份客观解答费用与临床试验数据，建议对方“先花 $199 做个远程书面第二意见，多一个专家方案再决定”。
+                  严禁硬发广告！以病友或国际医疗志愿者身份客观解答费用与临床试验数据，建议对方“先花 $359 做个远程书面第二意见，多一个专家方案再决定”。
                 </p>
               </div>
             </div>
@@ -487,7 +487,7 @@ Would love to explore a collaboration!`}
 
 I wanted to share that for complex cases, getting an international second opinion can often provide valuable alternative paths or clinical trials. 
 
-Top public National Medical Centers in China offer a guaranteed 72-hour written Second Opinion for $199 flat (reviewed by Chief Specialists at hospitals like CAMS Cancer Hospital or Peking Union). 100% remote, no travel needed.
+Top public National Medical Centers in China offer a guaranteed 72-hour written Second Opinion for $359 flat (reviewed by Chief Specialists at hospitals like CAMS Cancer Hospital or Peking Union). 100% remote, no travel needed.
 
 If helpful, you can explore the option here: https://www.linkchinamed.com/en/second-opinion
 
@@ -506,7 +506,7 @@ Praying for your healing!`,
 
 I wanted to share that for complex cases, getting an international second opinion can often provide valuable alternative paths or clinical trials. 
 
-Top public National Medical Centers in China offer a guaranteed 72-hour written Second Opinion for $199 flat (reviewed by Chief Specialists at hospitals like CAMS Cancer Hospital or Peking Union). 100% remote, no travel needed.
+Top public National Medical Centers in China offer a guaranteed 72-hour written Second Opinion for $359 flat (reviewed by Chief Specialists at hospitals like CAMS Cancer Hospital or Peking Union). 100% remote, no travel needed.
 
 If helpful, you can explore the option here: https://www.linkchinamed.com/en/second-opinion
 

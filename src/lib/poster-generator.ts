@@ -84,7 +84,7 @@ export const POSTER_THEMES: Record<PosterThemeId, PosterTheme> = {
   },
   second_opinion: {
     id: "second_opinion",
-    name: "72-Hour Rapid Second Opinion ($199)",
+    name: "72-Hour Rapid Second Opinion ($359)",
     tag: "REMOTE CLINICAL ASSESSMENT",
     headline: "EXPERT SECOND OPINION IN 72 HOURS",
     subheadline: "Comprehensive Written Diagnostic Review by Leading Grade 3-A Chief Physicians",
@@ -98,7 +98,7 @@ export const POSTER_THEMES: Record<PosterThemeId, PosterTheme> = {
       { icon: "🔒", title: "100% Remote & Safe:", desc: "No travel required; peace of mind before big decisions" },
     ],
     ctaTitle: "REQUEST SECOND OPINION NOW",
-    ctaSubtitle: "Scan to submit medical records securely ($199 flat fee)",
+    ctaSubtitle: "Scan to submit medical records securely ($359 flat fee)",
   },
   specialty_rx: {
     id: "specialty_rx",
